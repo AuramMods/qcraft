@@ -16,12 +16,12 @@
     },
     {
       "type": "patchouli:text",
-      "text": "/qcraft clear locations removes qBlock location tracking in your current dimension. /qcraft clear frequencies clears qBlock frequency records there. /qcraft clear all clears both.",
+      "text": "/qcraft clear frequencies unlinks qBlocks while keeping their locations. /qcraft clear locations removes their locations and frequency records. Both apply to the current dimension.",
       "title": "Clear qBlock Records"
     },
     {
       "type": "patchouli:text",
-      "text": "/qcraft clear by itself clears both sets of records as well. This affects live qBlock tracking, including linked pairs. Back up the world first. The command does not clear computer pair records.",
+      "text": "Use /qcraft clear all or /qcraft clear to erase both sets of qBlock records in the current dimension. Back up the world first. Quantum Computer links are stored separately.",
       "title": "Before You Clear"
     }
   ]

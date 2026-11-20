@@ -6,73 +6,73 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The stations pass the structure checks. Insert a charged cell on the initiating side and select Energize.",
-      "title": "All Systems Operational"
+      "text": "$(bold)All systems operational$()$(br2)The stations pass the structure checks. Insert a charged cell on the initiating side and select Energize.",
+      "title": "Ready"
     },
     {
       "type": "patchouli:text",
-      "text": "Craft two unlinked computers with one Essence of Entanglement between them. Replace the installed computers with the resulting pair.",
-      "title": "No Frequency Detected"
+      "text": "$(bold)No frequency detected$()$(br2)Craft two unlinked computers with one Essence of Entanglement between them. Replace the installed computers with the resulting pair.",
+      "title": "Missing Frequency"
     },
     {
       "type": "patchouli:text",
-      "text": "Check that the paired computer is placed in the same dimension. Compare the Frequency tooltips before placing the pair.",
-      "title": "Counterpart Not Found"
+      "text": "$(bold)Entangled counterpart not found$()$(br2)Check that the paired computer is placed in the same dimension. Compare the Frequency tooltips before placing the pair.",
+      "title": "Missing Counterpart"
     },
     {
       "type": "patchouli:text",
-      "text": "Open the other computer and read its own status. Correct its pylon setup or other reported problem before trying again.",
-      "title": "Counterpart Is Errored"
+      "text": "$(bold)Entangled counterpart is errored$()$(br2)Open the other computer and read its own status. Correct its pylon setup or other reported problem before trying again.",
+      "title": "Counterpart Error"
     },
     {
       "type": "patchouli:text",
-      "text": "Put a properly configured Observer-Dependent base on each cardinal arm at computer level, one to eight blocks away. Gold faces inward and Obsidian fills the other five faces.",
-      "title": "Incomplete Pylon System"
+      "text": "$(bold)Incomplete pylon system$()$(br2)Put a properly configured Observer-Dependent base on each cardinal arm at computer level, one to eight blocks away. Gold faces inward and Obsidian fills the other five faces.",
+      "title": "Missing Pylons"
     },
     {
       "type": "patchouli:text",
-      "text": "Check all four pylons at the station reporting this error. Make them equally tall with uninterrupted Obsidian directly above each base.",
-      "title": "Misaligned Pylon Heights"
+      "text": "$(bold)Misaligned pylon heights$()$(br2)Check all four pylons at the station reporting this error. Make them equally tall with uninterrupted Obsidian directly above each base.",
+      "title": "Uneven Pylons"
     },
     {
       "type": "patchouli:text",
-      "text": "Compare north with north, east with east, south with south, and west with west. Match the base distance on every arm at both stations.",
-      "title": "Pylon Distances Differ"
+      "text": "$(bold)Pylon distances with counterpart differ$()$(br2)Compare north with north, east with east, south with south, and west with west. Match the base distance on every arm at both stations.",
+      "title": "Different Offsets"
     },
     {
       "type": "patchouli:text",
-      "text": "Both stations need the same pylon height. Count each base as the first block and match the number of Obsidian blocks above it.",
-      "title": "Pylon Heights Differ"
+      "text": "$(bold)Pylon heights with counterpart differ$()$(br2)Both stations need the same pylon height. Count each base as the first block and match the number of Obsidian blocks above it.",
+      "title": "Different Heights"
     },
     {
       "type": "patchouli:text",
-      "text": "Bring both stations and every chunk touched by the swap into loaded range. Reduce the distance or keep a second player nearby.",
-      "title": "Station or Region Unloaded"
+      "text": "$(bold)A station or region is unloaded$()$(br2)Bring both stations and every chunk touched by the swap into loaded range. Reduce the distance or keep a second player nearby.",
+      "title": "Unloaded Region"
     },
     {
       "type": "patchouli:text",
-      "text": "Rebuild within the world border and build height. Check the full interior and its top layer, including any corners that extend past the border.",
-      "title": "Region Outside World Bounds"
+      "text": "$(bold)A region is outside the world bounds$()$(br2)Rebuild within the world border and build height. Check the full interior and its top layer, including any corners that extend past the border.",
+      "title": "World Bounds"
     },
     {
       "type": "patchouli:text",
-      "text": "Move one station farther away. The two complete interior footprints need to be separate.",
-      "title": "The Regions Overlap"
+      "text": "$(bold)The two regions overlap$()$(br2)Move one station farther away. The two complete interior footprints need to be separate.",
+      "title": "Overlapping Regions"
     },
     {
       "type": "patchouli:text",
-      "text": "For ‘A region contains a qBlock or block entity’, remove all qBlocks and blocks such as chests, furnaces, hoppers, or extra computers from both interiors.",
+      "text": "$(bold)A region contains a qBlock or block entity$()$(br2)Remove all qBlocks and blocks such as chests, furnaces, hoppers, or extra computers from both interiors.",
       "title": "Unsupported Cargo"
     },
     {
       "type": "patchouli:text",
-      "text": "Put charged coolant in the initiating computer. $(l:qcraft:computers/coolant)Refill a used cell$(/l) with Blue Ice when needed.",
-      "title": "Insert a Charged Cell"
+      "text": "$(bold)Insert a charged Coolant Cell$()$(br2)Put charged coolant in the initiating computer. $(l:qcraft:computers/coolant)Refill a used cell$(/l) with Blue Ice when needed.",
+      "title": "Missing Coolant"
     },
     {
       "type": "patchouli:text",
-      "text": "The block exchange did not finish. Check both regions and retry with a small test area of ordinary solid blocks. If it recurs, share the server log and station layout with the operator.",
-      "title": "The Region Swap Failed"
+      "text": "$(bold)The region swap failed$()$(br2)The block exchange did not finish. Check both regions and retry with a small test area of ordinary solid blocks. If it recurs, share the server log and station layout with the operator.",
+      "title": "Swap Failed"
     }
   ]
 }

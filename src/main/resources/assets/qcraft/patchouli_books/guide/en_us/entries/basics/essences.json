@@ -7,17 +7,20 @@
     {
       "type": "patchouli:crafting",
       "recipe": "qcraft:observation_essence",
-      "text": "Programs an $(l:qcraft:qblocks/observer_dependent)Observer-Dependent Block$(/l) and goes into goggles and observers."
+      "text": "Programs an $(l:qcraft:qblocks/observer_dependent)Observer-Dependent Block$(/l) and goes into goggles and observers.",
+      "title": "Observation Essence"
     },
     {
       "type": "patchouli:crafting",
       "recipe": "qcraft:superposition_essence",
-      "text": "Programs a $(l:qcraft:qblocks/quantum)Quantum Block$(/l) with two possible results per axis."
+      "text": "Programs a $(l:qcraft:qblocks/quantum)Quantum Block$(/l) with two possible results per axis.",
+      "title": "Superposition Essence"
     },
     {
       "type": "patchouli:crafting",
       "recipe": "qcraft:entanglement_essence",
-      "text": "Links two matching $(l:qcraft:entanglement/pairing)qBlocks or Quantum Computers$(/l)."
+      "text": "Links two matching $(l:qcraft:entanglement/pairing)qBlocks or Quantum Computers$(/l).",
+      "title": "Entanglement Essence"
     }
   ]
 }

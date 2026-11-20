@@ -1,6 +1,6 @@
 {
   "book.qcraft.guide.name": "qCraft Field Guide",
-  "book.qcraft.guide.landing": "Find Quantum Dust, observe your first qBlock, and work up to swapping two regions with Quantum Computers.",
+  "book.qcraft.guide.landing": "Build blocks that change when observed, automate them with redstone, and swap regions with Quantum Computers.$(br2)$(l:qcraft:basics/field_guide)Start here$(/l)$(br)$(l:qcraft:basics/ore)Find Quantum Ore$(/l)$(br)$(l:qcraft:qblocks/faces)Make your first qBlock$(/l)$(br)$(l:qcraft:computers/first_swap)Build a region swap$(/l)",
   "block.qcraft.quantum_ore": "Quantum Ore",
   "block.qcraft.deepslate_quantum_ore": "Deepslate Quantum Ore",
   "block.qcraft.quantum_dust_block": "Quantum Dust Block",
