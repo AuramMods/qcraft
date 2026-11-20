@@ -7,31 +7,31 @@ import com.acikek.qcraft.world.state.QBlockData;
 import com.acikek.qcraft.world.state.frequency.Frequential;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.DynamicSerializableUuid;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class QBlockLocation extends Frequential {
 
     public static final Codec<QBlockLocation> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     BlockPos.CODEC.fieldOf("pos").forGetter(l -> l.pos),
-                    DynamicSerializableUuid.CODEC.optionalFieldOf("frequency").forGetter(l -> l.frequency),
+                    UUIDUtil.CODEC.optionalFieldOf("frequency").forGetter(l -> l.frequency),
                     QBlock.Type.CODEC.fieldOf("type").forGetter(l -> l.type),
                     Codec.list(Codec.STRING).fieldOf("faces").forGetter(l -> l.faces),
-                    Codec.BOOL.fieldOf("observed").forGetter(l -> l.observed)
+                    Codec.BOOL.fieldOf("observed").forGetter(l -> l.observed),
+                    Codec.intRange(-1, 6).optionalFieldOf("pending_face", -1).forGetter(l -> l.pendingFace)
             )
             .apply(instance, QBlockLocation::new)
     );
@@ -41,6 +41,7 @@ public class QBlockLocation extends Frequential {
     public final QBlock.Type type;
     public final List<String> faces;
     public boolean observed;
+    public int pendingFace;
 
     /**
      * Constructs a {@link QBlockLocation}.<br>
@@ -53,14 +54,20 @@ public class QBlockLocation extends Frequential {
      * @param frequency The String UUID of the location's entanglement frequency.
      */
     public QBlockLocation(BlockPos pos, Optional<UUID> frequency, QBlock.Type type, List<String> faces, boolean observed) {
+        this(pos, frequency, type, faces, observed, -1);
+    }
+
+    private QBlockLocation(BlockPos pos, Optional<UUID> frequency, QBlock.Type type, List<String> faces, boolean observed, int pendingFace) {
         super(pos, frequency);
+        this.pendingFace = pendingFace;
         this.type = type;
         this.faces = faces;
         this.observed = observed;
     }
 
     public Block getFaceBlock(int index) {
-        return Registry.BLOCK.get(Identifier.tryParse(faces.get(index)));
+        ResourceLocation id = index < faces.size() ? ResourceLocation.tryParse(faces.get(index)) : null;
+        return id == null ? Blocks.AIR : BuiltInRegistries.BLOCK.get(id);
     }
 
     /**
@@ -78,22 +85,22 @@ public class QBlockLocation extends Frequential {
     public ItemStack getItemStack() {
         ItemStack stack = new ItemStack(type.resolveBlock());
         QBlockItem.applyFaces(stack, faces);
-        frequency.ifPresent(f -> stack.getOrCreateNbt().putUuid("frequency", f));
+        frequency.ifPresent(f -> stack.getOrCreateTag().putUUID("frequency", f));
         return stack;
     }
 
     /**
      * @return The vector between the block position and a player's eye position.
      */
-    public Vec3d getBetween(Vec3d eyePos) {
-        return eyePos.subtract(Vec3d.ofCenter(pos));
+    public Vec3 getBetween(Vec3 eyePos) {
+        return eyePos.subtract(Vec3.atCenterOf(pos));
     }
 
     /**
      * @return The closest axis to the player.
-     * @see QBlockLocation#getBetween(Vec3d)
+     * @see QBlockLocation#getBetween(Vec3)
      */
-    public QBlock.Axis getClosestAxis(Vec3d dists) {
+    public QBlock.Axis getClosestAxis(Vec3 dists) {
         double absX = Math.abs(dists.x);
         double absY = Math.abs(dists.y);
         double absZ = Math.abs(dists.z);
@@ -110,9 +117,9 @@ public class QBlockLocation extends Frequential {
 
     /**
      * @return The closest block face to the player.
-     * @see QBlockLocation#getBetween(Vec3d)
+     * @see QBlockLocation#getBetween(Vec3)
      */
-    public QBlock.Face getClosestFace(Vec3d dists) {
+    public QBlock.Face getClosestFace(Vec3 dists) {
         return switch (getClosestAxis(dists)) {
             case X -> dists.x > 0 ? QBlock.Face.EAST : QBlock.Face.WEST;
             case Y -> dists.y > 0 ? QBlock.Face.UP : QBlock.Face.DOWN;
@@ -120,8 +127,8 @@ public class QBlockLocation extends Frequential {
         };
     }
 
-    public QBlock.Face pickFace(PlayerEntity player, World world) {
-        Vec3d dists = getBetween(player.getEyePos());
+    public QBlock.Face pickFace(Player player, Level world) {
+        Vec3 dists = getBetween(player.getEyePosition());
         return type.pickFace(this, dists, world.random);
     }
 
@@ -133,12 +140,12 @@ public class QBlockLocation extends Frequential {
         if (block instanceof InertQBlock) {
             return false;
         }
-        String id = Registry.BLOCK.getId(block).toString();
+        String id = BuiltInRegistries.BLOCK.getKey(block).toString();
         return !faces.contains(id);
     }
 
     public boolean isPylonBase(QBlock.Face face) {
-        if (type != QBlock.Type.OBSERVER_DEPENDENT) {
+        if (type != QBlock.Type.OBSERVER_DEPENDENT || faces.size() != 6) {
             return false;
         }
         for (int i = 0; i < faces.size(); i++) {

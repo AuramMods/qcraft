@@ -45,7 +45,7 @@
   "command.qcraft.clear.locations": "qBlock(s)",
   "command.qcraft.clear.frequencies": "frecuencia(s)",
   "command.qcraft.clear.all": "qBlocks y frecuencias",
-  "command.qcraft.clear.success": "%d %s del mundo actual removidos",
+  "command.qcraft.clear.success": "%s %s del mundo actual removidos",
   "command.qcraft.clear.failure": "Tipo de despejar es inválido",
   "gui.qcraft.error.missing_frequency": "No hay frecuencia detectada",
   "gui.qcraft.error.missing_pylons": "El sistema de poste está incompleta",

@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[47,48)"
+license="MIT"
+issueTrackerURL="https://github.com/AuramMods/qcraft/issues"
+
+[[mods]]
+modId="qcraft"
+version="${version}"
+displayName="qCraft Reimagined"
+displayURL="https://github.com/AuramMods/qcraft"
+logoFile="assets/qcraft/icon.png"
+credits="Emmaffle"
+authors="acikek, VirtuaLilith"
+description="A reimagination of qCraft for modern Minecraft."
+
+[[dependencies.qcraft]]
+modId="forge"
+mandatory=true
+versionRange="[47,48)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.qcraft]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

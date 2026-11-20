@@ -1,19 +1,19 @@
 package com.acikek.qcraft.client;
 
-import com.acikek.qcraft.block.Blocks;
-import com.acikek.qcraft.block.quantum_computer.QuantumComputerGuiDescription;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.minecraft.client.render.RenderLayer;
+import com.acikek.qcraft.QCraft;
+import com.acikek.qcraft.block.quantum_computer.QuantumComputerMenu;
+import com.acikek.qcraft.client.gui.screen.QuantumComputerScreen;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-@Environment(EnvType.CLIENT)
-public class QCraftClient implements ClientModInitializer {
+@Mod.EventBusSubscriber(modid = QCraft.ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+public class QCraftClient {
 
-    @Override
-    public void onInitializeClient() {
-        BlockRenderLayerMap.INSTANCE.putBlock(Blocks.AUTOMATED_OBSERVER, RenderLayer.getCutout());
-        QuantumComputerGuiDescription.registerClient();
+    @SubscribeEvent
+    public static void setup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> MenuScreens.register(QuantumComputerMenu.TYPE.get(), QuantumComputerScreen::new));
     }
 }

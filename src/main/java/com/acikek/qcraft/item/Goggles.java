@@ -1,12 +1,12 @@
 package com.acikek.qcraft.item;
 
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ArmorMaterial;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.crafting.Ingredient;
 
 public class Goggles extends ArmorItem {
 
@@ -23,30 +23,30 @@ public class Goggles extends ArmorItem {
 
     public static class Material implements ArmorMaterial {
 
-        public final Type type;
+        public final com.acikek.qcraft.item.Goggles.Type type;
 
-        public Material(Type type) {
+        public Material(com.acikek.qcraft.item.Goggles.Type type) {
             this.type = type;
         }
 
         @Override
-        public int getDurability(EquipmentSlot slot) {
+        public int getDurabilityForType(ArmorItem.Type type) {
             return -1;
         }
 
         @Override
-        public int getProtectionAmount(EquipmentSlot slot) {
+        public int getDefenseForType(ArmorItem.Type type) {
             return 1;
         }
 
         @Override
-        public int getEnchantability() {
+        public int getEnchantmentValue() {
             return 0;
         }
 
         @Override
         public SoundEvent getEquipSound() {
-            return SoundEvents.ITEM_ARMOR_EQUIP_CHAIN;
+            return SoundEvents.ARMOR_EQUIP_CHAIN;
         }
 
         @Override
@@ -70,21 +70,21 @@ public class Goggles extends ArmorItem {
         }
     }
 
-    public final Type type;
+    public final com.acikek.qcraft.item.Goggles.Type type;
 
-    public Goggles(Type type) {
-        super(new Material(type), EquipmentSlot.HEAD, Items.defaultSettings());
+    public Goggles(com.acikek.qcraft.item.Goggles.Type type) {
+        super(new Material(type), ArmorItem.Type.HELMET, new net.minecraft.world.item.Item.Properties());
         this.type = type;
     }
 
     @Override
-    public boolean isDamageable() {
+    public boolean canBeDepleted() {
         return false;
     }
 
-    public static boolean isWearingGoggles(PlayerEntity player, Type type) {
-        return player.hasStackEquipped(EquipmentSlot.HEAD)
-                && player.getEquippedStack(EquipmentSlot.HEAD).getItem() instanceof Goggles goggles
+    public static boolean isWearingGoggles(Player player, com.acikek.qcraft.item.Goggles.Type type) {
+        return player.hasItemInSlot(EquipmentSlot.HEAD)
+                && player.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof Goggles goggles
                 && goggles.type == type;
     }
 }

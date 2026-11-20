@@ -1,26 +1,19 @@
 package com.acikek.qcraft.sound;
 
 import com.acikek.qcraft.QCraft;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class Sounds {
 
-    public static SoundEvent QUANTUM_COMPUTER_PLACE = create("block.quantum_computer.place");
-    public static SoundEvent QUANTUM_COMPUTER_BREAK = create("block.quantum_computer.break");
+    public static final DeferredRegister<SoundEvent> REGISTER = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, QCraft.ID);
+    public static final SoundEvent QUANTUM_COMPUTER_PLACE = register("block.quantum_computer.place");
+    public static final SoundEvent QUANTUM_COMPUTER_BREAK = register("block.quantum_computer.break");
 
-    public static SoundEvent[] SOUNDS = {
-            QUANTUM_COMPUTER_PLACE,
-            QUANTUM_COMPUTER_BREAK
-    };
-
-    public static SoundEvent create(String id) {
-        return new SoundEvent(QCraft.id(id));
-    }
-
-    public static void registerAll() {
-        for (SoundEvent sound : SOUNDS) {
-            Registry.register(Registry.SOUND_EVENT, sound.getId(), sound);
-        }
+    private static SoundEvent register(String name) {
+        SoundEvent sound = SoundEvent.createVariableRangeEvent(QCraft.id(name));
+        REGISTER.register(name, () -> sound);
+        return sound;
     }
 }

@@ -5,23 +5,23 @@ import com.acikek.qcraft.block.qblock.QBlock;
 import com.acikek.qcraft.predicate.EnumPredicate;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.advancement.criterion.AbstractCriterionConditions;
-import net.minecraft.predicate.BlockPredicate;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.critereon.DeserializationContext;
+import net.minecraft.advancements.critereon.SerializationContext;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 
-public class QuantumObservationCriterion extends AbstractCriterion<QuantumObservationCriterion.Conditions> {
+public class QuantumObservationCriterion extends SimpleCriterionTrigger<QuantumObservationCriterion.Conditions> {
 
-    public static Identifier ID = QCraft.id("quantum_observation");
+    public static ResourceLocation ID = QCraft.id("quantum_observation");
 
     @Override
-    protected Conditions conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+    protected Conditions createInstance(JsonObject obj, ContextAwarePredicate playerPredicate, DeserializationContext predicateDeserializer) {
         BlockPredicate face = BlockPredicate.fromJson(obj.get("face"));
         EnumPredicate<QBlock.Observation> observation = EnumPredicate.fromJson(obj.get("observation"), QBlock.Observation::valueOf);
         EnumPredicate<QBlock.Type> type = EnumPredicate.fromJson(obj.get("type"), QBlock.Type::valueOf);
@@ -30,22 +30,22 @@ public class QuantumObservationCriterion extends AbstractCriterion<QuantumObserv
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return ID;
     }
 
-    public void trigger(ServerPlayerEntity player, BlockPos pos, QBlock.Observation observationType, QBlock.Type qBlockType, boolean entangled) {
-        trigger(player, (Conditions conditions) -> conditions.matches(player.getWorld(), pos, observationType, qBlockType, entangled));
+    public void trigger(ServerPlayer player, BlockPos pos, QBlock.Observation observationType, QBlock.Type qBlockType, boolean entangled) {
+        trigger(player, (Conditions conditions) -> conditions.matches(player.serverLevel(), pos, observationType, qBlockType, entangled));
     }
 
-    public static class Conditions extends AbstractCriterionConditions {
+    public static class Conditions extends AbstractCriterionTriggerInstance {
 
         public BlockPredicate face;
         public EnumPredicate<QBlock.Observation> observation;
         public EnumPredicate<QBlock.Type> type;
         public boolean entangled;
 
-        public Conditions(EntityPredicate.Extended playerPredicate, BlockPredicate face, EnumPredicate<QBlock.Observation> observation, EnumPredicate<QBlock.Type> type, boolean entangled) {
+        public Conditions(ContextAwarePredicate playerPredicate, BlockPredicate face, EnumPredicate<QBlock.Observation> observation, EnumPredicate<QBlock.Type> type, boolean entangled) {
             super(ID, playerPredicate);
             this.face = face;
             this.observation = observation;
@@ -53,17 +53,17 @@ public class QuantumObservationCriterion extends AbstractCriterion<QuantumObserv
             this.entangled = entangled;
         }
 
-        public boolean matches(ServerWorld world, BlockPos pos, QBlock.Observation observation, QBlock.Type type, boolean entangled) {
-            return face.test(world, pos)
+        public boolean matches(ServerLevel world, BlockPos pos, QBlock.Observation observation, QBlock.Type type, boolean entangled) {
+            return face.matches(world, pos)
                     && this.observation.test(observation)
                     && this.type.test(type)
                     && this.entangled == entangled;
         }
 
         @Override
-        public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
-            JsonObject obj = super.toJson(predicateSerializer);
-            obj.add("face", face.toJson());
+        public JsonObject serializeToJson(SerializationContext predicateSerializer) {
+            JsonObject obj = super.serializeToJson(predicateSerializer);
+            obj.add("face", face.serializeToJson());
             obj.add("observation", observation.toJson());
             obj.add("type", type.toJson());
             obj.add("entangled", new JsonPrimitive(entangled));

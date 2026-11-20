@@ -1,42 +1,39 @@
 package com.acikek.qcraft.recipe;
 
-import com.acikek.qcraft.QCraft;
 import com.acikek.qcraft.item.Items;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.SpecialRecipeSerializer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
 
-public class CoolantCellRefillRecipe extends SpecialCraftingRecipe {
+public class CoolantCellRefillRecipe extends CustomRecipe {
 
-    public static SpecialRecipeSerializer<CoolantCellRefillRecipe> SERIALIZER;
-
-    public CoolantCellRefillRecipe(Identifier id) {
-        super(id);
+    public CoolantCellRefillRecipe(ResourceLocation id, CraftingBookCategory category) {
+        super(id, category);
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inventory) {
-        return new ItemStack(Items.COOLANT_CELL);
+    public ItemStack assemble(CraftingContainer inventory, RegistryAccess manager) {
+        return new ItemStack(Items.COOLANT_CELL.get());
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, World world) {
-        if (inventory.count(net.minecraft.item.Items.BLUE_ICE) != 1 || inventory.count(Items.COOLANT_CELL) != 1) {
+    public boolean matches(CraftingContainer inventory, Level world) {
+        if (inventory.countItem(net.minecraft.world.item.Items.BLUE_ICE) != 1 || inventory.countItem(Items.COOLANT_CELL.get()) != 1) {
             return false;
         }
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack stack = inventory.getStack(i);
-            if (stack.isOf(Items.COOLANT_CELL)) {
-                if (stack.getDamage() == 0) {
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.is(Items.COOLANT_CELL.get())) {
+                if (stack.getDamageValue() == 0) {
                     return false;
                 }
             }
-            else if (!stack.isEmpty() && !stack.isOf(net.minecraft.item.Items.BLUE_ICE)) {
+            else if (!stack.isEmpty() && !stack.is(net.minecraft.world.item.Items.BLUE_ICE)) {
                 return false;
             }
         }
@@ -44,16 +41,12 @@ public class CoolantCellRefillRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return width * height >= 2;
     }
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return SERIALIZER;
-    }
-
-    public static void register() {
-        SERIALIZER = Registry.register(Registry.RECIPE_SERIALIZER, QCraft.id("crafting_special_coolant_cell_refill"), new SpecialRecipeSerializer<>(CoolantCellRefillRecipe::new));
+        return Recipes.COOLANT_CELL_REFILL.get();
     }
 }

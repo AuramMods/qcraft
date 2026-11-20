@@ -1,12 +1,10 @@
 package com.acikek.qcraft.block.qblock;
 
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.Material;
+import net.minecraft.world.level.block.Block;
 
 public class InertQBlock extends Block {
 
-    public static final Settings DEFAULT_SETTINGS = FabricBlockSettings.of(Material.STONE).strength(5.0f, 5.0f);
+    public static final Properties DEFAULT_SETTINGS = Properties.of().strength(5.0f, 5.0f);
 
     public InertQBlock() {
         super(DEFAULT_SETTINGS);

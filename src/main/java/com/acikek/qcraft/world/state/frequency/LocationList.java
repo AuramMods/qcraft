@@ -1,42 +1,39 @@
 package com.acikek.qcraft.world.state.frequency;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class LocationList<T extends Frequential> {
 
-    public List<T> list;
-    public T removed = null;
+    private final Map<BlockPos, T> locations = new LinkedHashMap<>();
 
-    public LocationList() {
-        list = new ArrayList<>();
+    public Optional<T> get(BlockPos pos) {
+        return Optional.ofNullable(locations.get(pos));
     }
 
-    /**
-     * @return The location at the specified block position, if present.
-     */
-    public Optional<T> get(BlockPos blockPos) {
-        return list.stream()
-                .filter(loc -> loc.pos.asLong() == blockPos.asLong())
-                .findFirst();
+    public boolean has(BlockPos pos) {
+        return locations.containsKey(pos);
     }
 
-    /**
-     * Removes the specified block location.
-     */
-    public void remove(T location, boolean save) {
-        if (list.remove(location)) {
-            if (save) {
-                removed = location;
-            }
-            list.remove(location);
-        }
+    public boolean add(T location) {
+        return locations.putIfAbsent(location.pos, location) == null;
     }
 
-    public boolean has(BlockPos blockPos) {
-        return get(blockPos).isPresent();
+    public boolean remove(T location) {
+        return locations.remove(location.pos, location);
+    }
+
+    public Collection<T> values() {
+        return locations.values();
+    }
+
+    public int clear() {
+        int size = locations.size();
+        locations.clear();
+        return size;
     }
 }

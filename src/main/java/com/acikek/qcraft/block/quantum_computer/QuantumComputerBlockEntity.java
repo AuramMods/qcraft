@@ -1,116 +1,157 @@
 package com.acikek.qcraft.block.quantum_computer;
 
+import com.acikek.qcraft.QCraft;
 import com.acikek.qcraft.block.Blocks;
+import com.acikek.qcraft.item.Items;
+import com.acikek.qcraft.world.state.QuantumComputerData;
 import lib.ImplementedInventory;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.Nullable;
 
-public class QuantumComputerBlockEntity extends BlockEntity implements ImplementedInventory, SidedInventory, ExtendedScreenHandlerFactory {
+import java.util.Optional;
+import java.util.UUID;
 
-    public static BlockEntityType<QuantumComputerBlockEntity> QUANTUM_COMPUTER_BLOCK_ENTITY;
+public class QuantumComputerBlockEntity extends BlockEntity implements ImplementedInventory, WorldlyContainer, MenuProvider {
 
-    public final DefaultedList<ItemStack> items = DefaultedList.ofSize(1, ItemStack.EMPTY);
+    public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, QCraft.ID);
+    public static final RegistryObject<BlockEntityType<QuantumComputerBlockEntity>> TYPE = REGISTER.register("quantum_computer_block_entity",
+            () -> BlockEntityType.Builder.of(QuantumComputerBlockEntity::new, Blocks.QUANTUM_COMPUTER.get()).build(null));
 
-    public QuantumComputer.Result<QuantumComputer.Result.Teleportation> result;
+    private static final int[] COOLANT_SLOT = {0};
+    private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+    private Optional<UUID> frequency = Optional.empty();
+    private LazyOptional<IItemHandler> hopperAccess = createHopperAccess();
 
     public QuantumComputerBlockEntity(BlockPos pos, BlockState state) {
-        super(QUANTUM_COMPUTER_BLOCK_ENTITY, pos, state);
+        super(TYPE.get(), pos, state);
+    }
+
+    Optional<UUID> frequency() {
+        if (level instanceof ServerLevel serverLevel && !isRemoved()) {
+            var location = QuantumComputerData.get(serverLevel).locations.get(worldPosition);
+            if (location.isPresent()) {
+                return location.get().frequency;
+            }
+        }
+        return frequency;
+    }
+
+    void setFrequency(Optional<UUID> value) {
+        frequency = value;
+        setChanged();
     }
 
     @Override
-    public DefaultedList<ItemStack> getItems() {
+    public NonNullList<ItemStack> getItems() {
         return items;
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
-        Inventories.readNbt(nbt, items);
+    public void setItem(int slot, ItemStack stack) {
+        ImplementedInventory.super.setItem(slot, stack);
+        setChanged();
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt) {
-        Inventories.writeNbt(nbt, items);
-        super.writeNbt(nbt);
-    }
-
-    @Nullable
-    @Override
-    public Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public boolean stillValid(Player player) {
+        return !isRemoved() && Container.stillValidBlockEntity(this, player);
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
-        return createNbt();
-    }
-
-    public static void register() {
-        QUANTUM_COMPUTER_BLOCK_ENTITY = Registry.register(
-                Registry.BLOCK_ENTITY_TYPE,
-                "qcraft:quantum_computer_block_entity",
-                FabricBlockEntityTypeBuilder
-                        .create(QuantumComputerBlockEntity::new, Blocks.QUANTUM_COMPUTER)
-                        .build(null)
-        );
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        items.clear();
+        ContainerHelper.loadAllItems(tag, items);
+        frequency = tag.hasUUID("frequency") ? Optional.of(tag.getUUID("frequency")) : Optional.empty();
     }
 
     @Override
-    public Text getDisplayName() {
-        return Text.translatable(getCachedState().getBlock().getTranslationKey());
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, items);
+        frequency.ifPresent(id -> tag.putUUID("frequency", id));
     }
 
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory inventory, PlayerEntity player) {
-        return new QuantumComputerGuiDescription(syncId, inventory, ScreenHandlerContext.create(world, pos), result);
+    public Component getDisplayName() {
+        return getBlockState().getBlock().getName();
     }
 
     @Override
-    public int[] getAvailableSlots(Direction side) {
-        return new int[1];
+    public AbstractContainerMenu createMenu(int syncId, Inventory inventory, Player player) {
+        return new QuantumComputerMenu(syncId, inventory, this);
     }
 
     @Override
-    public boolean canInsert(int slot, ItemStack stack, @Nullable Direction dir) {
-        return dir == Direction.UP;
+    public int[] getSlotsForFace(Direction side) {
+        return side == Direction.UP ? COOLANT_SLOT : new int[0];
     }
 
     @Override
-    public boolean canExtract(int slot, ItemStack stack, Direction dir) {
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return slot == 0 && stack.is(Items.COOLANT_CELL.get());
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
+        return side == Direction.UP && canPlaceItem(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return false;
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-        if (result != null) {
-            buf.encode(QuantumComputer.Result.CODEC, result);
-        }
+    public int getMaxStackSize() {
+        return 1;
+    }
+
+    private LazyOptional<IItemHandler> createHopperAccess() {
+        return LazyOptional.of(() -> new SidedInvWrapper(this, Direction.UP));
     }
 
     @Override
-    public int getMaxCountPerStack() {
-        return 1;
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        if (capability == ForgeCapabilities.ITEM_HANDLER && side == Direction.UP && !isRemoved()) {
+            return hopperAccess.cast();
+        }
+        return super.getCapability(capability, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        hopperAccess.invalidate();
+    }
+
+    @Override
+    public void reviveCaps() {
+        super.reviveCaps();
+        hopperAccess = createHopperAccess();
     }
 }

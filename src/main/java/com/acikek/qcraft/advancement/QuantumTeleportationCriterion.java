@@ -3,20 +3,20 @@ package com.acikek.qcraft.advancement;
 import com.acikek.qcraft.QCraft;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.advancement.criterion.AbstractCriterionConditions;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
-import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.critereon.DeserializationContext;
+import net.minecraft.advancements.critereon.SerializationContext;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 
-public class QuantumTeleportationCriterion extends AbstractCriterion<QuantumTeleportationCriterion.Conditions> {
+public class QuantumTeleportationCriterion extends SimpleCriterionTrigger<QuantumTeleportationCriterion.Conditions> {
 
-    public static Identifier ID = QCraft.id("quantum_teleportation");
+    public static ResourceLocation ID = QCraft.id("quantum_teleportation");
 
     @Override
-    protected Conditions conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+    protected Conditions createInstance(JsonObject obj, ContextAwarePredicate playerPredicate, DeserializationContext predicateDeserializer) {
         JsonPrimitive width = obj.getAsJsonPrimitive("width");
         JsonPrimitive length = obj.getAsJsonPrimitive("length");
         JsonPrimitive height = obj.getAsJsonPrimitive("height");
@@ -28,25 +28,25 @@ public class QuantumTeleportationCriterion extends AbstractCriterion<QuantumTele
     }
 
     @Override
-    public Identifier getId() {
+    public ResourceLocation getId() {
         return ID;
     }
 
-    public void trigger(ServerPlayerEntity player, int[] dimensions) {
+    public void trigger(ServerPlayer player, int[] dimensions) {
         trigger(player, dimensions[0], dimensions[1], dimensions[2]);
     }
 
-    public void trigger(ServerPlayerEntity player, int width, int length, int height) {
+    public void trigger(ServerPlayer player, int width, int length, int height) {
         trigger(player, (QuantumTeleportationCriterion.Conditions conditions) -> conditions.matches(width, length, height));
     }
 
-    public static class Conditions extends AbstractCriterionConditions {
+    public static class Conditions extends AbstractCriterionTriggerInstance {
 
         int width;
         int length;
         int height;
 
-        public Conditions(EntityPredicate.Extended playerPredicate, int width, int length, int height) {
+        public Conditions(ContextAwarePredicate playerPredicate, int width, int length, int height) {
             super(ID, playerPredicate);
             this.width = width;
             this.length = length;
@@ -60,8 +60,8 @@ public class QuantumTeleportationCriterion extends AbstractCriterion<QuantumTele
         }
 
         @Override
-        public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
-            JsonObject obj = super.toJson(predicateSerializer);
+        public JsonObject serializeToJson(SerializationContext predicateSerializer) {
+            JsonObject obj = super.serializeToJson(predicateSerializer);
             obj.add("width", new JsonPrimitive(width));
             obj.add("length", new JsonPrimitive(length));
             obj.add("height", new JsonPrimitive(height));

@@ -46,7 +46,7 @@
   "command.qcraft.clear.locations": "Κβαντικοί Κύβοι",
   "command.qcraft.clear.frequencies": "συχνότητα",
   "command.qcraft.clear.all": "Κβαντικοί Κύβοι και συχνότητες",
-  "command.qcraft.clear.success": "Το %d %s διαγράφτηκε από αυτόν τον Κόσμο",
+  "command.qcraft.clear.success": "Το %s %s διαγράφτηκε από αυτόν τον Κόσμο",
   "command.qcraft.clear.failure": "Μη αναγνωρίσιμο είδος εκαθάρησης",
   "gui.qcraft.error.missing_frequency": "Η συχνότητα΄δεν βρέθηκε",
   "gui.qcraft.error.missing_pylons": "Ατελής Σύστημα Πυλώνων",

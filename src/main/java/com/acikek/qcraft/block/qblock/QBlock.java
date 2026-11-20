@@ -5,17 +5,16 @@ import com.acikek.qcraft.block.Blocks;
 import com.acikek.qcraft.world.state.location.QBlockLocation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-
 import java.util.function.BiFunction;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 
 public class QBlock extends InertQBlock implements BlockItemProvider {
 
@@ -30,32 +29,32 @@ public class QBlock extends InertQBlock implements BlockItemProvider {
             return switch (id) {
                 case "observer_dependent_block" -> DataResult.success(Type.OBSERVER_DEPENDENT);
                 case "quantum_block" -> DataResult.success(Type.QUANTUM);
-                default -> DataResult.error("Not a valid qBlock type: " + id);
+                default -> DataResult.error(() -> "Not a valid qBlock type: " + id);
             };
         }
 
         public QBlock resolveBlock() {
             return switch (this) {
-                case OBSERVER_DEPENDENT -> Blocks.OBSERVER_DEPENDENT_BLOCK;
-                case QUANTUM -> Blocks.QUANTUM_BLOCK;
+                case OBSERVER_DEPENDENT -> Blocks.OBSERVER_DEPENDENT_BLOCK.get();
+                case QUANTUM -> Blocks.QUANTUM_BLOCK.get();
             };
         }
 
         public InertQBlock resolveInert() {
             return switch (this) {
-                case OBSERVER_DEPENDENT -> Blocks.INERT_OBSERVER_DEPENDENT_BLOCK;
-                case QUANTUM -> Blocks.INERT_QUANTUM_BLOCK;
+                case OBSERVER_DEPENDENT -> Blocks.INERT_OBSERVER_DEPENDENT_BLOCK.get();
+                case QUANTUM -> Blocks.INERT_QUANTUM_BLOCK.get();
             };
         }
 
-        public Face pickFace(QBlockLocation location, Vec3d dists, Random random) {
+        public Face pickFace(QBlockLocation location, Vec3 dists, RandomSource random) {
             return switch (this) {
                 case OBSERVER_DEPENDENT -> location.getClosestFace(dists);
                 case QUANTUM -> location.getClosestAxis(dists).getRandomFace(random);
             };
         }
 
-        public Face pickFace(Direction direction, Random random) {
+        public Face pickFace(Direction direction, RandomSource random) {
             return switch (this) {
                 case OBSERVER_DEPENDENT -> Face.from(direction);
                 case QUANTUM -> Axis.from(direction.getAxis()).getRandomFace(random);
@@ -86,13 +85,13 @@ public class QBlock extends InertQBlock implements BlockItemProvider {
         public final int slot;
         public final int index;
         public final Direction direction;
-        public final MutableText text;
+        public final MutableComponent text;
 
         Face(int slot, int index, Direction direction, String name) {
             this.slot = slot;
             this.index = index;
             this.direction = direction;
-            text = Text.translatable("tooltip.qcraft." + name);
+            text = Component.translatable("tooltip.qcraft." + name);
         }
 
         public Face getOpposite() {
@@ -107,7 +106,7 @@ public class QBlock extends InertQBlock implements BlockItemProvider {
         }
 
         public void apply(ItemStack stack, String value) {
-            stack.getOrCreateSubNbt("faces").putString(name(), value);
+            stack.getOrCreateTagElement("faces").putString(name(), value);
         }
 
         public static Face from(Direction direction) {
@@ -138,7 +137,7 @@ public class QBlock extends InertQBlock implements BlockItemProvider {
         Y,
         Z;
 
-        public Face getRandomFace(Random rng) {
+        public Face getRandomFace(RandomSource rng) {
             boolean value = rng.nextBoolean();
             return switch (this) {
                 case X -> value ? Face.EAST : Face.WEST;
@@ -163,12 +162,12 @@ public class QBlock extends InertQBlock implements BlockItemProvider {
         this.type = type;
     }
 
-    public static QBlock getBlockFromItem(Item item) {
-        return (QBlock) Block.getBlockFromItem(item);
+    public static QBlock byItem(Item item) {
+        return (QBlock) Block.byItem(item);
     }
 
     @Override
-    public BiFunction<Block, Item.Settings, BlockItem> getBlockItem() {
+    public BiFunction<Block, Item.Properties, BlockItem> getBlockItem() {
         return QBlockItem::new;
     }
 }

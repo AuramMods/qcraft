@@ -1,68 +1,33 @@
 package com.acikek.qcraft.world.state.frequency;
 
-import com.acikek.qcraft.QCraft;
-
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class FrequencyMap<T extends Frequential, P extends Pair<T>> {
 
-    public Map<UUID, P> map = new HashMap<>();
+    public final Map<UUID, P> map = new HashMap<>();
 
-    public void filter(LocationList<T> list) {
-        int size = map.size();
-        for (Map.Entry<UUID, P> frequency : map.entrySet()) {
-            for (T item : frequency.getValue().getBoth()) {
-                if (item != null && !list.list.contains(item)) {
-                    map.remove(frequency.getKey());
-                    break;
-                }
-            }
-        }
-        if (map.size() < size) {
-            QCraft.LOGGER.error("Removed " + (size - map.size()) + " invalid frequencies");
-        }
+    public T counterpart(T item) {
+        P pair = item.frequency.map(map::get).orElse(null);
+        return pair == null ? null : pair.getOther(item);
     }
 
-    public void fill(List<T> list, Function<T, P> ctor) {
-        for (T item : list) {
-            item.frequency.ifPresent(frequency -> {
-                if (!map.containsKey(frequency)) {
-                    map.put(frequency, ctor.apply(item));
-                }
-                else if (!map.get(frequency).add(item)) {
-                    QCraft.LOGGER.error("Failed to add " + item + " to frequency '" + frequency + "'");
-                }
-            });
-        }
-    }
-
-    public void ifPresent(Frequential item, Consumer<P> consumer) {
-        item.frequency.ifPresent(frequency -> {
-            if (map.containsKey(frequency)) {
-                consumer.accept(map.get(frequency));
-            }
-            else {
-                QCraft.LOGGER.error(item + " has an unmatched frequency '" + frequency + "'");
-                item.frequency = Optional.empty();
-            }
-        });
-    }
-
-    public void add(UUID uuid, T item, Function<T, ? extends P> ctor) {
-        if (map.containsKey(uuid)) {
-            map.get(uuid).add(item);
-        }
-        else {
-            map.put(uuid, ctor.apply(item));
+    public void add(UUID id, T item, Function<T, P> createPair) {
+        P pair = map.get(id);
+        if (pair == null) {
+            map.put(id, createPair.apply(item));
+        } else {
+            pair.add(item);
         }
     }
 
     public void remove(T item) {
-        ifPresent(item, pair -> {
-            if (pair.remove(item) && item.frequency.isPresent()) {
-                map.remove(item.frequency.get());
+        item.frequency.ifPresent(id -> {
+            P pair = map.get(id);
+            if (pair != null && pair.remove(item)) {
+                map.remove(id);
             }
         });
     }

@@ -1,38 +1,37 @@
 package com.acikek.qcraft.recipe;
 
-import com.acikek.qcraft.QCraft;
 import com.acikek.qcraft.block.qblock.QBlock;
 import com.acikek.qcraft.block.qblock.QBlockItem;
 import com.acikek.qcraft.item.QBlockEssence;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.SpecialRecipeSerializer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
 
-public class QBlockRecipe extends SpecialCraftingRecipe {
+public class QBlockRecipe extends CustomRecipe {
 
-    public static SpecialRecipeSerializer<QBlockRecipe> SERIALIZER;
-
-    public QBlockRecipe(Identifier id) {
-        super(id);
+    public QBlockRecipe(ResourceLocation id, CraftingBookCategory category) {
+        super(id, category);
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inventory) {
-        QBlockEssence essence = (QBlockEssence) inventory.getStack(QBlock.Face.CENTER).getItem();
+    public ItemStack assemble(CraftingContainer inventory, RegistryAccess manager) {
+        QBlockEssence essence = (QBlockEssence) inventory.getItem(QBlock.Face.CENTER).getItem();
         List<String> faces = new ArrayList<>();
         for (QBlock.Face face : QBlock.Face.values()) {
-            Item item = inventory.getStack(face.slot).getItem();
-            faces.add(Registry.ITEM.getId(item).toString());
+            Item item = inventory.getItem(face.slot).getItem();
+            faces.add(item instanceof BlockItem blockItem
+                    ? BuiltInRegistries.BLOCK.getKey(blockItem.getBlock()).toString()
+                    : "minecraft:air");
         }
         ItemStack stack = new ItemStack(essence.getQBlock());
         QBlockItem.applyFaces(stack, faces);
@@ -40,24 +39,25 @@ public class QBlockRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public boolean fits(int width, int height) {
-        return width * height >= 9;
+    public boolean canCraftInDimensions(int width, int height) {
+        return width == 3 && height == 3;
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, World world) {
-        if (!(inventory.getStack(QBlock.Face.CENTER).getItem() instanceof QBlockEssence)) {
+    public boolean matches(CraftingContainer inventory, Level world) {
+        if (!canCraftInDimensions(inventory.getWidth(), inventory.getHeight())
+                || !(inventory.getItem(QBlock.Face.CENTER).getItem() instanceof QBlockEssence)) {
             return false;
         }
         for (int i : QBlock.Face.EMPTY_SLOTS) {
-            if (!inventory.getStack(i).isEmpty()) {
+            if (!inventory.getItem(i).isEmpty()) {
                 return false;
             }
         }
         Item faceItem = null;
         boolean oneDifferent = false;
         for (QBlock.Face face : QBlock.Face.values()) {
-            ItemStack stack = inventory.getStack(face.slot);
+            ItemStack stack = inventory.getItem(face.slot);
             Item item = stack.getItem();
             if (!stack.isEmpty() && (!(item instanceof BlockItem) || item instanceof QBlockItem)) {
                 return false;
@@ -74,10 +74,6 @@ public class QBlockRecipe extends SpecialCraftingRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return SERIALIZER;
-    }
-
-    public static void register() {
-        SERIALIZER = Registry.register(Registry.RECIPE_SERIALIZER, QCraft.id("crafting_special_qblock"), new SpecialRecipeSerializer<>(QBlockRecipe::new));
+        return Recipes.Q_BLOCK.get();
     }
 }

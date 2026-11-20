@@ -1,47 +1,22 @@
 package com.acikek.qcraft.item;
 
 import com.acikek.qcraft.QCraft;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.item.Item;
-import net.minecraft.util.registry.Registry;
-
-import java.util.HashMap;
-import java.util.Map;
+import net.minecraft.world.item.Item;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 public class Items {
 
-    public static final Item QUANTUM_DUST = new Item(defaultSettings());
-    public static final Item COOLANT_CELL = new Item(defaultSettings().maxDamage(100));
-    public static final QBlockEssence OBSERVATION_ESSENCE = new QBlockEssence(defaultSettings(), Essence.Type.OBSERVATION);
-    public static final QBlockEssence SUPERPOSITION_ESSENCE = new QBlockEssence(defaultSettings(), Essence.Type.SUPERPOSITION);
-    public static final Essence ENTANGLEMENT_ESSENCE = new Essence(defaultSettings(), Essence.Type.ENTANGLEMENT);
-    public static final Goggles QUANTUM_GOGGLES = new Goggles(Goggles.Type.QUANTUM);
-    public static final Goggles ANTI_OBSERVATION_GOGGLES = new Goggles(Goggles.Type.ANTI_OBSERVATION);
-
-
-    public static FabricItemSettings defaultSettings() {
-        return new FabricItemSettings().group(QCraft.ITEM_GROUP);
-    }
-
-    public static final HashMap<String, Item> ITEMS = new HashMap<>();
-
-    static {
-        ITEMS.put("quantum_dust", QUANTUM_DUST);
-        ITEMS.put("coolant_cell", COOLANT_CELL);
-        ITEMS.put("observation_essence", OBSERVATION_ESSENCE);
-        ITEMS.put("superposition_essence", SUPERPOSITION_ESSENCE);
-        ITEMS.put("entanglement_essence", ENTANGLEMENT_ESSENCE);
-        ITEMS.put("quantum_goggles", QUANTUM_GOGGLES);
-        ITEMS.put("anti_observation_goggles", ANTI_OBSERVATION_GOGGLES);
-    }
-
-    public static void register(String name, Item item) {
-        Registry.register(Registry.ITEM, QCraft.id(name), item);
-    }
-
-    public static void registerAll() {
-        for (Map.Entry<String, Item> data : ITEMS.entrySet()) {
-            register(data.getKey(), data.getValue());
-        }
-    }
+    public static final DeferredRegister<Item> REGISTER = DeferredRegister.create(ForgeRegistries.ITEMS, QCraft.ID);
+    public static final RegistryObject<Item> QUANTUM_DUST = REGISTER.register("quantum_dust", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> COOLANT_CELL = REGISTER.register("coolant_cell", () -> new Item(new Item.Properties().durability(100)));
+    public static final RegistryObject<QBlockEssence> OBSERVATION_ESSENCE = REGISTER.register("observation_essence",
+            () -> new QBlockEssence(new Item.Properties(), Essence.Type.OBSERVATION));
+    public static final RegistryObject<QBlockEssence> SUPERPOSITION_ESSENCE = REGISTER.register("superposition_essence",
+            () -> new QBlockEssence(new Item.Properties(), Essence.Type.SUPERPOSITION));
+    public static final RegistryObject<Essence> ENTANGLEMENT_ESSENCE = REGISTER.register("entanglement_essence",
+            () -> new Essence(new Item.Properties(), Essence.Type.ENTANGLEMENT));
+    public static final RegistryObject<Goggles> QUANTUM_GOGGLES = REGISTER.register("quantum_goggles", () -> new Goggles(Goggles.Type.QUANTUM));
+    public static final RegistryObject<Goggles> ANTI_OBSERVATION_GOGGLES = REGISTER.register("anti_observation_goggles", () -> new Goggles(Goggles.Type.ANTI_OBSERVATION));
 }

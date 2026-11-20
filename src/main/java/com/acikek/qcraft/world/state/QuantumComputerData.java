@@ -2,33 +2,31 @@ package com.acikek.qcraft.world.state;
 
 import com.acikek.qcraft.world.state.frequency.Frequential;
 import com.acikek.qcraft.world.state.location.QuantumComputerLocation;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 
 public class QuantumComputerData extends LocationState<QuantumComputerLocation, QuantumComputerLocation.Pair> {
 
-    public static final Keys keys = new Keys("qc");
+    private static final Keys KEYS = new Keys("qc");
 
     /**
      * Gets or creates {@link QuantumComputerData} state from the specified world.
      *
-     * @param world The {@link ServerWorld} to get the state from.
+     * @param world The {@link ServerLevel} to get the state from.
      * @return The {@link QuantumComputerData} instance.
      */
-    public static QuantumComputerData get(World world) {
-        return ((ServerWorld) world).getPersistentStateManager().getOrCreate(QuantumComputerData::fromNbt, QuantumComputerData::new, keys.id);
+    public static QuantumComputerData get(ServerLevel world) {
+        return world.getDataStorage().computeIfAbsent(QuantumComputerData::fromNbt, QuantumComputerData::new, KEYS.id());
     }
 
-    public static QuantumComputerData fromNbt(NbtCompound nbt) {
+    public static QuantumComputerData fromNbt(CompoundTag nbt) {
         QuantumComputerData data = new QuantumComputerData();
-        List<QuantumComputerLocation> locations = Frequential.parse(QuantumComputerLocation.LIST_CODEC, nbt, keys.data);
+        List<QuantumComputerLocation> locations = Frequential.parse(QuantumComputerLocation.LIST_CODEC, nbt, KEYS.data());
         if (!locations.isEmpty()) {
             data.fill(locations, QuantumComputerLocation.Pair::new);
         }
@@ -46,15 +44,15 @@ public class QuantumComputerData extends LocationState<QuantumComputerLocation, 
         }
         Optional<UUID> frequency = Frequential.getFrequency(stack);
         QuantumComputerLocation result = new QuantumComputerLocation(blockPos, frequency);
-        locations.list.add(result);
+        locations.add(result);
         frequency.ifPresent(f -> frequencies.add(f, result, QuantumComputerLocation.Pair::new));
-        markDirty();
+        setDirty();
         return result;
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        Frequential.encode(QuantumComputerLocation.LIST_CODEC, locations.list, nbt, keys.data);
+    public CompoundTag save(CompoundTag nbt) {
+        Frequential.encode(QuantumComputerLocation.LIST_CODEC, List.copyOf(locations.values()), nbt, KEYS.data());
         return nbt;
     }
 }

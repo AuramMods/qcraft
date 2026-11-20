@@ -1,93 +1,119 @@
 package com.acikek.qcraft.world;
 
+import com.acikek.qcraft.block.AutomatedObserver;
+import com.acikek.qcraft.block.qblock.QBlock;
 import com.acikek.qcraft.item.Goggles;
 import com.acikek.qcraft.world.state.QBlockData;
 import com.acikek.qcraft.world.state.location.QBlockLocation;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.PistonEvent;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-public class QBlockTickListener implements ServerTickEvents.StartWorldTick {
+public class QBlockTickListener {
 
-    public QBlockData data;
+    private static final double PITCH_THRESHOLD = 60.0;
+    private static final double YAW_THRESHOLD = 80.0;
 
-    public static final double PITCH_THRESHOLD = 60.0;
-    public static final double YAW_THRESHOLD = 80.0;
-
-    // These methods took 4 days to write.
-    // Massive thanks to sssubtlety, nHail, and dirib!
-
-    public double getPitch(Vec3d between) {
-        double pitch = Math.atan(between.y / Math.sqrt(between.x * between.x + between.z * between.z));
-        return Math.toDegrees(pitch);
+    public static void onLevelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase == TickEvent.Phase.START && event.level instanceof ServerLevel level) {
+            observeWorld(level);
+        }
     }
 
-    public double getYawDifference(PlayerEntity player, Vec3d between) {
-        Vec3d rotated = between.rotateY((float) Math.toRadians(270));
-        double yaw = Math.atan2(rotated.z, rotated.x);
-        return 180.0 - Math.abs(Math.abs(player.getYaw() - Math.toDegrees(yaw)) - 180.0);
+    public static void onPistonMove(PistonEvent.Pre event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        var structure = event.getStructureHelper();
+        if (structure == null || !structure.resolve()) {
+            return;
+        }
+        QBlockData data = QBlockData.get(level);
+        Direction move = event.getPistonMoveType().isExtend ? event.getDirection() : event.getDirection().getOpposite();
+        if (data.locations.has(event.getFaceOffsetPos())
+                || structure.getToDestroy().stream().anyMatch(data.locations::has)
+                || structure.getToPush().stream().anyMatch(pos -> data.locations.has(pos) || data.locations.has(pos.relative(move)))) {
+            event.setCanceled(true);
+        }
     }
 
-    public double getPitchDifference(double playerPitch, double betweenPitch, double yawDiff) {
+    // Keep the original angular field of view independent of the client's graphics settings.
+    static boolean canSee(Player player, Vec3 between) {
+        double pitch = Math.toDegrees(Math.atan2(between.y, Math.hypot(between.x, between.z)));
+        Vec3 rotated = between.yRot((float) Math.toRadians(270));
+        double yaw = Math.toDegrees(Math.atan2(rotated.z, rotated.x));
+        double yawDiff = Math.abs(net.minecraft.util.Mth.wrapDegrees(player.getYRot() - yaw));
+        double playerPitch = player.getXRot();
         if (yawDiff > 90.0) {
-            betweenPitch = (playerPitch > 0.0 ? 180.0 : -180.0) - betweenPitch;
+            pitch = (playerPitch > 0.0 ? 180.0 : -180.0) - pitch;
         }
-        return Math.abs(playerPitch - betweenPitch);
+        boolean verticalView = playerPitch + PITCH_THRESHOLD > 90 || playerPitch - PITCH_THRESHOLD < -90;
+        return Math.abs(playerPitch - pitch) < PITCH_THRESHOLD && (verticalView || yawDiff < YAW_THRESHOLD);
     }
 
-    public boolean isObserved(double pitchDiff, double yawDiff, double playerPitch) {
-        boolean viewportIntersectsYAxis = playerPitch + PITCH_THRESHOLD > 90 || playerPitch -PITCH_THRESHOLD < -90;
-        return pitchDiff < PITCH_THRESHOLD && (viewportIntersectsYAxis || yawDiff < YAW_THRESHOLD);
-    }
+    private static void observeWorld(ServerLevel level) {
+        QBlockData data = QBlockData.get(level);
+        List<QBlockLocation> loaded = data.getLoadedLocations(level);
+        if (loaded.isEmpty()) {
+            return;
+        }
 
-    @Override
-    public void onStartTick(ServerWorld world) {
-        if (data == null) {
-            data = QBlockData.get(world, true);
-        }
-        if (data.locations.list.isEmpty()) {
-            return;
-        }
-        List<QBlockLocation> loadedLocations = data.getLoadedLocations(world);
-        if (loadedLocations.isEmpty()) {
-            return;
-        }
-        List<QBlockLocation> observed = new ArrayList<>();
-        List<QBlockLocation> unobservationQueue = new ArrayList<>();
-        for (PlayerEntity player : world.getPlayers()) {
-            if (Goggles.isWearingGoggles(player, Goggles.Type.ANTI_OBSERVATION)) {
-                continue;
-            }
-            List<QBlockLocation> localLocations = data.getLocalLocations(world, loadedLocations, player);
-            if (localLocations.isEmpty()) {
-                continue;
-            }
-            Vec3d center = player.getPos().lerp(player.getEyePos(), 0.5);
-            for (QBlockLocation location : localLocations) {
-                Vec3d between = location.getBetween(player.getEyePos());
-                double yawDiff = getYawDifference(player, between);
-                double betweenPitch = getPitch(between);
-                double pitchDiff = getPitchDifference(player.getPitch(), betweenPitch, yawDiff);
-                if (isObserved(pitchDiff, yawDiff, player.getPitch())) {
-                    observed.add(location);
-                    if (unobservationQueue.contains(location)) {
-                        unobservationQueue.remove(location);
-                    }
-                    else if (!location.observed && data.getOtherNotObserved(location)) {
-                        data.observe(location, world, player);
-                    }
+        int range = level.getServer().getPlayerList().getSimulationDistance() * 16;
+        Set<QBlockLocation> held = new HashSet<>();
+        for (QBlockLocation location : loaded) {
+            data.applyPendingDisplay(location, level);
+            Direction machine = poweredObserver(level, location);
+            if (machine != null) {
+                held.add(location);
+                if (data.isUnobserved(location)) {
+                    Vec3 center = Vec3.atCenterOf(location.pos);
+                    Player nearby = level.getNearestPlayer(center.x, center.y, center.z, 10.0, false);
+                    data.observe(location, level, location.type.pickFace(machine, level.random), QBlock.Observation.AUTOMATED_OBSERVER, nearby);
                 }
-                else if (location.observed && data.canBeUnobserved(location, center) && !observed.contains(location) && !unobservationQueue.contains(location)) {
-                    unobservationQueue.add(location);
+            }
+
+            for (Player player : level.players()) {
+                if (player.isSpectator() || Goggles.isWearingGoggles(player, Goggles.Type.ANTI_OBSERVATION)) {
+                    continue;
+                }
+                if (location.pos.closerToCenterThan(player.getEyePosition(), range) && canSee(player, location.getBetween(player.getEyePosition()))) {
+                    held.add(location);
+                    if (data.isUnobserved(location)) {
+                        data.observe(location, level, player);
+                    }
+                } else if (location.pos.closerToCenterThan(player.position().lerp(player.getEyePosition(), 0.5), 2.0)) {
+                    held.add(location);
                 }
             }
         }
-        for (QBlockLocation location : unobservationQueue) {
-            data.unobserve(location, world, true);
+
+        for (QBlockLocation location : loaded) {
+            if (location.observed && !held.contains(location) && !held.contains(data.frequencies.counterpart(location))) {
+                data.unobserve(location, level);
+            }
         }
+    }
+
+    private static Direction poweredObserver(ServerLevel level, QBlockLocation location) {
+        for (Direction face : Direction.Plane.HORIZONTAL) {
+            var observerPos = location.pos.relative(face);
+            if (level.hasChunkAt(observerPos)) {
+                BlockState state = level.getBlockState(observerPos);
+                if (state.getBlock() instanceof AutomatedObserver
+                        && state.getValue(AutomatedObserver.FACING) == face
+                        && state.getValue(AutomatedObserver.POWERED)) {
+                    return face;
+                }
+            }
+        }
+        return null;
     }
 }

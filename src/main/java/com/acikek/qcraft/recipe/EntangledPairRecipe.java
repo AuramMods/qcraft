@@ -1,59 +1,56 @@
 package com.acikek.qcraft.recipe;
 
-import com.acikek.qcraft.QCraft;
 import com.acikek.qcraft.block.FrequentialItem;
 import com.acikek.qcraft.block.qblock.QBlockItem;
 import com.acikek.qcraft.item.Essence;
-import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.recipe.SpecialRecipeSerializer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
-
 import java.util.UUID;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.Level;
 
-public class EntangledPairRecipe extends SpecialCraftingRecipe {
+public class EntangledPairRecipe extends CustomRecipe {
 
-    public static SpecialRecipeSerializer<EntangledPairRecipe> SERIALIZER;
-
-    public EntangledPairRecipe(Identifier id) {
-        super(id);
+    public EntangledPairRecipe(ResourceLocation id, CraftingBookCategory category) {
+        super(id, category);
     }
 
     public static void applyFrequency(ItemStack stack, UUID uuid) {
-        stack.getOrCreateNbt().putUuid("frequency", uuid);
+        stack.getOrCreateTag().putUUID("frequency", uuid);
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inventory) {
-        ItemStack stack = inventory.getStack(Essence.findSlot(inventory) - 1).copy();
+    public ItemStack assemble(CraftingContainer inventory, RegistryAccess manager) {
+        ItemStack stack = inventory.getItem(Essence.findSlot(inventory) - 1).copy();
         applyFrequency(stack, UUID.randomUUID());
         stack.setCount(2);
         return stack;
     }
 
     @Override
-    public boolean fits(int width, int height) {
+    public boolean canCraftInDimensions(int width, int height) {
         return width >= 3;
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, World world) {
+    public boolean matches(CraftingContainer inventory, Level world) {
         int essenceSlot = Essence.findSlot(inventory);
-        if (essenceSlot == -1 || ((Essence) inventory.getStack(essenceSlot).getItem()).essenceType != Essence.Type.ENTANGLEMENT) {
+        int width = inventory.getWidth();
+        if (width < 3 || essenceSlot < 0 || essenceSlot % width == 0 || essenceSlot % width == width - 1
+                || ((Essence) inventory.getItem(essenceSlot).getItem()).essenceType != Essence.Type.ENTANGLEMENT) {
             return false;
         }
-        for (int i = 0; i < inventory.size(); i++) {
-            System.out.println(i + " " + essenceSlot);
-            if ((i < essenceSlot - 1 || i > essenceSlot + 1) && !inventory.getStack(i).isEmpty()) {
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            if ((i < essenceSlot - 1 || i > essenceSlot + 1) && !inventory.getItem(i).isEmpty()) {
                 return false;
             }
         }
-        ItemStack left = inventory.getStack(essenceSlot - 1);
-        ItemStack right = inventory.getStack(essenceSlot + 1);
+        ItemStack left = inventory.getItem(essenceSlot - 1);
+        ItemStack right = inventory.getItem(essenceSlot + 1);
         if (left.getItem() != right.getItem()) {
             return false;
         }
@@ -62,10 +59,6 @@ public class EntangledPairRecipe extends SpecialCraftingRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return SERIALIZER;
-    }
-
-    public static void register() {
-        SERIALIZER = Registry.register(Registry.RECIPE_SERIALIZER, QCraft.id("crafting_special_entangled_pair"), new SpecialRecipeSerializer<>(EntangledPairRecipe::new));
+        return Recipes.ENTANGLED_PAIR.get();
     }
 }

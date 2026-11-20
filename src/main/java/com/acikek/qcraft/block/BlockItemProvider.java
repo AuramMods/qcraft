@@ -1,11 +1,10 @@
 package com.acikek.qcraft.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-
 import java.util.function.BiFunction;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 public interface BlockItemProvider {
-    BiFunction<Block, Item.Settings, BlockItem> getBlockItem();
+    BiFunction<Block, Item.Properties, BlockItem> getBlockItem();
 }

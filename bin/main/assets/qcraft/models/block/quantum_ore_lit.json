@@ -1,6 +1,0 @@
-{
-  "parent": "block/cube_all",
-  "textures": {
-    "all": "qcraft:block/quantum_ore_lit"
-  }
-}
