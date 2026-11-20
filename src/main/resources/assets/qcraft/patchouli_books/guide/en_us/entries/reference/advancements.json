@@ -1,0 +1,33 @@
+{
+  "name": "Advancement Path",
+  "icon": "minecraft:experience_bottle",
+  "category": "qcraft:reference",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Pick up Quantum Dust to reveal the qCraft branch. Obtain an Observer-Dependent Block for To Each Their Own and a Quantum Block for Going Superpositional.",
+      "title": "Enter qCraft"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Wear or collect Anti-Observation Goggles for A Mere Bystander. Look at a linked qBlock for Inseparable. Use an Automated Observer near you for Quantum Mechanization.",
+      "title": "Observe and Automate"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "For No More Chickens, stay within ten blocks while an Automated Observer collapses a Quantum Block into a Redstone Block. The $(l:qcraft:automation/randomness)lamp build$(/l) gives you that outcome on some trials.",
+      "title": "Light the Lamp"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Obtain a Quantum Computer for What's a Qubit? Energize paired stations and complete a region swap for Efficient Transport.",
+      "title": "Computer Milestones"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "This challenge accepts either inert qBlock item in your inventory. An unobserved placed block's appearance alone does not trigger it.",
+      "title": "I Like This Texture"
+    }
+  ]
+}

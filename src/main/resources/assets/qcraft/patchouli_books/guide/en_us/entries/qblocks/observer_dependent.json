@@ -1,0 +1,29 @@
+{
+  "name": "Observer-Dependent Blocks",
+  "icon": "qcraft:observer_dependent_block",
+  "category": "qcraft:qblocks",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Put an Essence of Observation in the $(l:qcraft:qblocks/faces)face grid$(/l). Set North to Gold Block, and fill the other five faces with Stone. Check the tooltip before placing the result.",
+      "title": "Pick the Faces"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Place it in an open area. Back away four or more blocks, stand north of it, and look to see gold. Look away long enough to release it, then look from the south to see stone.",
+      "title": "Change Your View"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Move away and turn well clear of the block. Another player or powered observer can keep it observed. Standing very close can also keep it observed while you turn.",
+      "title": "Release an Observation"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "qcraft:inert_observer_dependent_block",
+      "title": "The Inert State",
+      "text": "When nobody is observing, the block returns to its inert appearance. Wear $(l:qcraft:qblocks/goggles)Anti-Observation Goggles$(/l) while placing or inspecting it to see that state easily."
+    }
+  ]
+}

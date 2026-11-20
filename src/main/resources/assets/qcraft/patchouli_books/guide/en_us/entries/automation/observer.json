@@ -1,0 +1,23 @@
+{
+  "name": "Automated Observer",
+  "icon": "qcraft:automated_observer",
+  "category": "qcraft:automation",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:automated_observer",
+      "text": "Use this redstone-powered block to observe a qBlock automatically."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Place it directly beside the qBlock. The redstone input goes on the side opposite the qBlock. To build the next experiment, stand to the east and place it facing you.",
+      "title": "Set the Orientation"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Power the observer to start an observation. Switch it off and wait for the qBlock to return to inert. Step away or wear $(l:qcraft:qblocks/goggles)Anti-Observation Goggles$(/l) while testing.",
+      "title": "Reset the Target"
+    }
+  ]
+}

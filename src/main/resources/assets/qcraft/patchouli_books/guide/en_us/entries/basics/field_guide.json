@@ -5,13 +5,19 @@
   "sortnum": 0,
   "pages": [
     {
+      "type": "patchouli:text",
+      "text": "Start by $(l:qcraft:basics/ore)mining Quantum Ore$(/l). Use its dust to make $(l:qcraft:basics/essences)essences$(/l), then $(l:qcraft:qblocks/observer_dependent)make a block that changes when you look at it$(/l).",
+      "title": "Your First Experiment"
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "qcraft:guide_book",
-      "text": "Craft the field guide with a book and one Quantum Dust in any arrangement."
+      "text": "Combine a Book and one Quantum Dust anywhere in a crafting grid. Finding dust unlocks this recipe."
     },
     {
       "type": "patchouli:text",
-      "text": "Begin with a block that changes when you look at it. Then link a pair, let redstone do the observing, and build two stations that can swap an area of the world."
+      "text": "$(l:qcraft:entanglement/pairing)Link two blocks$(/l) to share an observation. Put a $(l:qcraft:automation/randomness)random signal$(/l) on a wire. Then build two $(l:qcraft:computers/first_swap)stations that swap blocks$(/l).",
+      "title": "What to Build Next"
     }
   ]
 }

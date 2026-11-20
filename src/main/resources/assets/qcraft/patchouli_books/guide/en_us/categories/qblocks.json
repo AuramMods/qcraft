@@ -1,0 +1,6 @@
+{
+  "name": "Making qBlocks",
+  "description": "Program the six faces of a block and see how observation changes it.",
+  "icon": "qcraft:observation_essence",
+  "sortnum": 1
+}

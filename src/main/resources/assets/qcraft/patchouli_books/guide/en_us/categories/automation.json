@@ -1,0 +1,6 @@
+{
+  "name": "Automation",
+  "description": "Power an observer and build a circuit with two possible outputs.",
+  "icon": "qcraft:automated_observer",
+  "sortnum": 3
+}

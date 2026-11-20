@@ -1,0 +1,33 @@
+{
+  "name": "Pylon Construction",
+  "icon": "qcraft:observer_dependent_block",
+  "category": "qcraft:computers",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Use an Essence of Observation and the $(l:qcraft:qblocks/faces)face grid$(/l). Place Gold Block in the slot for the face toward the computer. Fill the other five slots with Obsidian.",
+      "title": "Program Each Base"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "For the north base set South to Gold. For the south base set North to Gold. For the west base set East to Gold. For the east base set West to Gold. Make one of each per station.",
+      "title": "Point the Gold Inward"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Place a base along each cardinal arm on the computer's Y level, one to eight blocks out. The computer uses the farthest matching pylon on each arm.",
+      "title": "Set the Footprint"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A base alone makes a pylon one block high. Add contiguous Obsidian directly above each base to go higher. All four pylons at a station must be the same height.",
+      "title": "Set the Height"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Match each directional offset and all four heights at the other station. The swap starts at computer Y and includes the pylon height. The pylon positions are outside its interior.",
+      "title": "Match Both Stations"
+    }
+  ]
+}

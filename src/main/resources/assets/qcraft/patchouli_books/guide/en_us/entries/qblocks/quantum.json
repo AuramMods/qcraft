@@ -1,0 +1,24 @@
+{
+  "name": "Quantum Blocks",
+  "icon": "qcraft:quantum_block",
+  "category": "qcraft:qblocks",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Put an Essence of Superposition in the $(l:qcraft:qblocks/faces)face grid$(/l). Fill East with Gold Block and every other face with Stone. Hover the output to check East and West.",
+      "title": "Pick an Axis"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Observe from the east or west. The block chooses one of those two opposite faces. Look away from several blocks away to reset it, and look back. A new trial can repeat the last result.",
+      "title": "Repeat the Trial"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "qcraft:inert_quantum_block",
+      "title": "Inert Quantum Block",
+      "text": "An unobserved Quantum Block has its own inert appearance. To repeat a trial on demand, use an $(l:qcraft:automation/observer)Automated Observer$(/l)."
+    }
+  ]
+}

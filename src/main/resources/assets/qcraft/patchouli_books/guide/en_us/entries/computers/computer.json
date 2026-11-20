@@ -1,0 +1,23 @@
+{
+  "name": "Quantum Computers",
+  "icon": "qcraft:quantum_computer",
+  "category": "qcraft:computers",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:quantum_computer",
+      "text": "Craft two computers and $(l:qcraft:entanglement/pairing)pair them$(/l) with Essence of Entanglement."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Use the computer to open its screen and read its status. The slot takes a $(l:qcraft:computers/coolant)Coolant Cell$(/l). Select Energize to swap the two regions when both stations are ready.",
+      "title": "Open the Computer"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Ordinary blocks inside the two matching regions trade places. The two computers and their pylons stay put. Move players and mobs yourself. Keep qBlocks and block entities out of the cargo.",
+      "title": "What Moves"
+    }
+  ]
+}

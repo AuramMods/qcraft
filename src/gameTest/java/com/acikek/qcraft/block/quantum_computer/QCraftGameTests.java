@@ -33,6 +33,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RedstoneLampBlock;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -45,6 +48,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,7 +59,7 @@ public class QCraftGameTests {
 
     private static final String AREA = "test_area";
     private static final BlockPos FIRST_STATION = new BlockPos(5, 1, 5);
-    private static final BlockPos SECOND_STATION = new BlockPos(16, 1, 5);
+    private static final BlockPos SECOND_STATION = new BlockPos(17, 1, 5);
 
     private static Block interruptingBlock;
     private static BlockPos interruptAt;
@@ -215,6 +219,52 @@ public class QCraftGameTests {
                         && Frequential.getFrequency(drops.get(0).getItem()).orElseThrow().equals(frequency),
                 "Mining must drop one configured block with the original frequency, got " + drops.stream().map(ItemEntity::getItem).toList());
         test.succeed();
+    }
+
+    @GameTest(template = AREA, timeoutTicks = 600)
+    public static void fieldGuideCircuitLightsForOnlyOneOutcome(GameTestHelper test) {
+        BlockPos target = FIRST_STATION;
+        BlockPos lamp = target.west();
+        BlockPos observerPos = target.east();
+        BlockPos lever = target.east(2);
+        Block inert = com.acikek.qcraft.block.Blocks.INERT_QUANTUM_BLOCK.get();
+        var player = test.makeMockSurvivalPlayer();
+        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get()));
+        ItemStack stack = new ItemStack(com.acikek.qcraft.block.Blocks.QUANTUM_BLOCK.get());
+        QBlockItem.applyFaces(stack, Collections.nCopies(6, "minecraft:stone"));
+        QBlock.Face.EAST.apply(stack, "minecraft:redstone_block");
+        place(test, player, target, stack);
+        test.setBlock(lamp, Blocks.REDSTONE_LAMP);
+        test.setBlock(observerPos.below(), Blocks.STONE);
+        test.setBlock(observerPos, com.acikek.qcraft.block.Blocks.AUTOMATED_OBSERVER.get()
+                .defaultBlockState().setValue(AutomatedObserver.FACING, Direction.EAST));
+        test.setBlock(lever.below(), Blocks.STONE);
+        test.setBlock(lever, Blocks.LEVER.defaultBlockState().setValue(BlockStateProperties.ATTACH_FACE, AttachFace.FLOOR));
+
+        var results = new HashSet<Block>();
+        for (int trial = 0; trial < 32; trial++) {
+            int start = 1 + trial * 16;
+            test.runAtTickTime(start, () -> {
+                test.assertBlockPresent(inert, target);
+                test.assertBlockProperty(lamp, RedstoneLampBlock.LIT, false);
+                test.pullLever(lever);
+            });
+            test.runAtTickTime(start + 6, () -> {
+                test.assertBlockProperty(observerPos, AutomatedObserver.POWERED, true);
+                Block state = test.getBlockState(target).getBlock();
+                test.assertTrue(state == Blocks.REDSTONE_BLOCK || state == Blocks.STONE,
+                        "The observer should select the east or west face");
+                test.assertBlockProperty(lamp, RedstoneLampBlock.LIT, state == Blocks.REDSTONE_BLOCK);
+                results.add(state);
+                test.pullLever(lever);
+            });
+        }
+        test.runAtTickTime(513, () -> {
+            test.assertBlockPresent(inert, target);
+            test.assertBlockProperty(lamp, RedstoneLampBlock.LIT, false);
+            test.assertTrue(results.size() == 2, "Repeated trials should produce both opposite faces");
+            test.succeed();
+        });
     }
 
     @GameTest(template = AREA)

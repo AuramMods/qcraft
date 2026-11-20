@@ -1,0 +1,23 @@
+{
+  "name": "Shared Observation",
+  "icon": "qcraft:quantum_block",
+  "category": "qcraft:entanglement",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Place both linked qBlocks in the same dimension, near enough that both chunks are loaded. Look at one. Its partner takes on the same selected face, even if approached from another side.",
+      "title": "Try a Matched Pair"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The selected face persists while either partner is held by an observation. Turn away or switch off the powered observer holding it. Both need to be released before a new trial.",
+      "title": "Release Both Ends"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "An unloaded partner's update is saved and applied when its chunk loads. The link does not keep either chunk loaded. For $(l:qcraft:computers/first_swap)computer swaps$(/l), both regions must be loaded.",
+      "title": "Unloaded Partners"
+    }
+  ]
+}

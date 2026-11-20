@@ -1,0 +1,25 @@
+{
+  "name": "Finding Quantum Ore",
+  "icon": "qcraft:quantum_ore",
+  "category": "qcraft:basics",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "qcraft:quantum_ore",
+      "title": "Quantum Ore",
+      "text": "Explore the Overworld below Y=16 where stone is still common. Quantum Ore can glow when you touch or strike it."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "qcraft:deepslate_quantum_ore",
+      "title": "Deepslate Ore",
+      "text": "Look in deep Overworld deepslate, especially near the bottom of the world. The deepest veins tend to be near Y=-64."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Use an iron, diamond, or netherite pickaxe. Both ores drop $(l:qcraft:basics/dust)Quantum Dust$(/l). Fortune can increase the drop. With Silk Touch, the pickaxe recovers the ore itself.",
+      "title": "Mining the Ore"
+    }
+  ]
+}

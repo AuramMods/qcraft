@@ -1,0 +1,18 @@
+{
+  "name": "Quantum Dust",
+  "icon": "qcraft:quantum_dust_block",
+  "category": "qcraft:basics",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:quantum_dust_block",
+      "text": "Pack nine dust into one Quantum Dust Block."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:quantum_dust",
+      "text": "Unpack the block to recover all nine dust. Keep some dust handy for $(l:qcraft:basics/essences)essences$(/l)."
+    }
+  ]
+}

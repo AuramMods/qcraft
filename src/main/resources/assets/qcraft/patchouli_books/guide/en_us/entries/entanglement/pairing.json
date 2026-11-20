@@ -1,0 +1,27 @@
+{
+  "name": "Pairing Blocks",
+  "icon": "qcraft:entanglement_essence",
+  "category": "qcraft:entanglement",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "qcraft:textures/gui/guide/pair_grid.png"
+      ],
+      "title": "The Entangling Recipe",
+      "border": true,
+      "text": "ESS. is Essence of Entanglement."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Put an Essence of Entanglement between two unlinked qBlocks of the same type. All six programmed faces must match, including Air. Leave every other slot empty.",
+      "title": "Match the Ingredients"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The same grid also accepts two unlinked $(l:qcraft:computers/computer)Quantum Computers$(/l). You receive two items that share a frequency. Hover each to check its Frequency line.",
+      "title": "Pair Computers"
+    }
+  ]
+}

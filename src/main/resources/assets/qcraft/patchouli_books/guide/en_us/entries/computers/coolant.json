@@ -1,0 +1,27 @@
+{
+  "name": "Coolant Cells",
+  "icon": "qcraft:coolant_cell",
+  "category": "qcraft:computers",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:coolant_cell",
+      "text": "A fresh Coolant Cell holds 100 charges. A successful swap uses one charge from the initiating computer."
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "qcraft:textures/gui/guide/refill_grid.png"
+      ],
+      "title": "Refill a Cell",
+      "border": true,
+      "text": "Combine the two in any crafting slots."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Place the cell in the screen's slot or feed it with a hopper pointing down into the top of the computer. Take a used cell out through the screen when it needs a refill.",
+      "title": "Feed Coolant"
+    }
+  ]
+}

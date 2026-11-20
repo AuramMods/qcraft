@@ -1,0 +1,32 @@
+{
+  "name": "The Face Recipe",
+  "icon": "minecraft:crafting_table",
+  "category": "qcraft:qblocks",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "qcraft:textures/gui/guide/face_grid.png"
+      ],
+      "title": "The Six Faces",
+      "border": true,
+      "text": "ESS. is the center essence."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Place an $(l:qcraft:basics/essences)essence$(/l) in the center. Each labeled face takes a block item. The top-right and bottom-right slots must stay empty.",
+      "title": "Fill the Grid"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "An empty face slot means Air. Use at least two different values across all six faces, including Air. Two kinds of blocks work, or one kind and Air. Use ordinary blocks for faces.",
+      "title": "Program Air"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Hover the crafted qBlock to see all six labeled faces. Up and Down are vertical. North, South, West, and East are fixed world directions. Java's F3 screen shows your facing.",
+      "title": "Read the Result"
+    }
+  ]
+}

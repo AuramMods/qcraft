@@ -1,0 +1,28 @@
+{
+  "name": "Operator Commands",
+  "icon": "minecraft:command_block",
+  "category": "qcraft:reference",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "These commands require operator permission level 4. Run /qcraft by itself for mod information.",
+      "title": "Permissions"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "/qcraft kit <player> gives four preconfigured Observer-Dependent pylon bases, one of each compass orientation. You still need computers, matching station layouts, and coolant.",
+      "title": "Give a Pylon Kit"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "/qcraft clear locations removes qBlock location tracking in your current dimension. /qcraft clear frequencies clears qBlock frequency records there. /qcraft clear all clears both.",
+      "title": "Clear qBlock Records"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "/qcraft clear by itself clears both sets of records as well. This affects live qBlock tracking, including linked pairs. Back up the world first. The command does not clear computer pair records.",
+      "title": "Before You Clear"
+    }
+  ]
+}

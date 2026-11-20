@@ -1,0 +1,32 @@
+{
+  "name": "Redstone Randomness",
+  "icon": "minecraft:redstone_lamp",
+  "category": "qcraft:automation",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Bring a Redstone Lamp, an Automated Observer and a Lever. Make a $(l:qcraft:qblocks/quantum)Quantum Block$(/l) with Redstone Block on East and Stone on West and the other four faces.",
+      "title": "Gather the Parts"
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "qcraft:textures/gui/guide/randomness.png"
+      ],
+      "title": "Build West to East",
+      "border": true,
+      "text": "Place the lever on top of a support. All four parts share a Y level."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Power on. The Quantum Block chooses East or West. Redstone Block lights the adjacent lamp. Stone leaves it dark. Read the lamp after it settles.",
+      "title": "Read the Lamp"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Turn the lever off. Wait for the lamp to go dark and the qBlock to return to inert. Turn it on again. Repeat until you see both outcomes. Keep other power sources clear of the lamp.",
+      "title": "Run Another Trial"
+    }
+  ]
+}

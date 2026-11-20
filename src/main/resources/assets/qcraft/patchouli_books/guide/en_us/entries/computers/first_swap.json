@@ -1,0 +1,43 @@
+{
+  "name": "Your First Region Swap",
+  "icon": "minecraft:gold_block",
+  "category": "qcraft:computers",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Bring two Quantum Computers, one Essence of Entanglement, and one charged $(l:qcraft:computers/coolant)Coolant Cell$(/l). Pair the computers before placing them.",
+      "title": "Gather the Computers"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "For eight bases, bring eight Essences of Observation, eight Gold Blocks, and 40 Obsidian. Also bring two different ordinary blocks as cargo, such as Gold Block and Diamond Block.",
+      "title": "Gather the Pylons"
+    },
+    {
+      "type": "patchouli:image",
+      "images": [
+        "qcraft:textures/gui/guide/stations.png"
+      ],
+      "title": "Two Matching Stations",
+      "border": true,
+      "text": "Top view. Colored corners mark the cargo."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "On open ground in one dimension, put the computers 12 blocks apart east to west. Place a $(l:qcraft:computers/pylons)pylon base$(/l) two blocks out along each arm. Use one-block-high pylons.",
+      "title": "Place the Stations",
+      "anchor": "build"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Each interior is 3×3 at computer height. Place one cargo block diagonally southeast of each computer. Keep all other interior cells empty. Stay close enough to load both stations.",
+      "title": "Add Test Cargo"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Insert coolant at either station and click Energize. Check that the marked cargo traded places, the centers stayed put, and the cell lost one charge. See $(l:qcraft:computers/status)status messages$(/l) if needed.",
+      "title": "Energize"
+    }
+  ]
+}

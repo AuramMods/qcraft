@@ -1,0 +1,24 @@
+{
+  "name": "Goggles",
+  "icon": "qcraft:anti_observation_goggles",
+  "category": "qcraft:qblocks",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:anti_observation_goggles",
+      "text": "Wear these in your head slot to move and build without observing qBlocks."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Your presence and placement no longer trigger an observation while you wear the goggles. Other players and powered observers still can. Take them off when you want to observe again.",
+      "title": "Work Around a qBlock"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "qcraft:quantum_goggles",
+      "title": "Quantum Goggles",
+      "text": "The ordinary pair is wearable armor. In this build it has no special observation effect and no survival recipe. Find it in the qCraft creative tab."
+    }
+  ]
+}

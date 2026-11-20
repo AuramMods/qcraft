@@ -1,0 +1,23 @@
+{
+  "name": "The Three Essences",
+  "icon": "qcraft:superposition_essence",
+  "category": "qcraft:basics",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:observation_essence",
+      "text": "Programs an $(l:qcraft:qblocks/observer_dependent)Observer-Dependent Block$(/l) and goes into goggles and observers."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:superposition_essence",
+      "text": "Programs a $(l:qcraft:qblocks/quantum)Quantum Block$(/l) with two possible results per axis."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:entanglement_essence",
+      "text": "Links two matching $(l:qcraft:entanglement/pairing)qBlocks or Quantum Computers$(/l)."
+    }
+  ]
+}
