@@ -1,0 +1,17 @@
+{
+  "name": "The Field Guide",
+  "icon": "minecraft:writable_book",
+  "category": "qcraft:basics",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "qcraft:guide_book",
+      "text": "Craft the field guide with a book and one Quantum Dust in any arrangement."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Begin with a block that changes when you look at it. Then link a pair, let redstone do the observing, and build two stations that can swap an area of the world."
+    }
+  ]
+}

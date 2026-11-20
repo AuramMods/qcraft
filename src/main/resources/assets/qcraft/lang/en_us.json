@@ -1,4 +1,6 @@
 {
+  "book.qcraft.guide.name": "qCraft Field Guide",
+  "book.qcraft.guide.landing": "Find Quantum Dust, observe your first qBlock, and work up to swapping two regions with Quantum Computers.",
   "block.qcraft.quantum_ore": "Quantum Ore",
   "block.qcraft.deepslate_quantum_ore": "Deepslate Quantum Ore",
   "block.qcraft.quantum_dust_block": "Quantum Dust Block",

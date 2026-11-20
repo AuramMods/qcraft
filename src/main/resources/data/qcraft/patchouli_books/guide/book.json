@@ -1,0 +1,17 @@
+{
+  "name": "book.qcraft.guide.name",
+  "landing_text": "book.qcraft.guide.landing",
+  "subtitle": "Experiments in observation",
+  "model": "qcraft:guide_book",
+  "creative_tab": "qcraft:main",
+  "use_resource_pack": true,
+  "book_texture": "qcraft:textures/gui/guide/book.png",
+  "filler_texture": "qcraft:textures/gui/guide/page_filler.png",
+  "crafting_texture": "qcraft:textures/gui/guide/crafting.png",
+  "text_color": "26301b",
+  "header_color": "36560d",
+  "nameplate_color": "d7f68d",
+  "link_color": "3c6211",
+  "link_hover_color": "698900",
+  "show_progress": false
+}

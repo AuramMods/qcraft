@@ -1,0 +1,25 @@
+{
+  "type": "forge:conditional",
+  "recipes": [
+    {
+      "conditions": [
+        {
+          "type": "forge:mod_loaded",
+          "modid": "patchouli"
+        }
+      ],
+      "recipe": {
+        "type": "patchouli:shapeless_book_recipe",
+        "book": "qcraft:guide",
+        "ingredients": [
+          { "item": "minecraft:book" },
+          { "item": "qcraft:quantum_dust" }
+        ],
+        "result": {
+          "item": "patchouli:guide_book",
+          "count": 1
+        }
+      }
+    }
+  ]
+}

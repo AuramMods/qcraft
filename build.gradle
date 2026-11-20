@@ -51,17 +51,22 @@ mixin {
 
 repositories {
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+    maven {
+        url = 'https://www.cursemaven.com'
+        content { includeModule 'curse.maven', 'patchouli-306770' }
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    runtimeOnly fg.deobf("curse.maven:patchouli-306770:${patchouli_curse_file}")
 }
 
 tasks.named('processResources', ProcessResources).configure {
-    inputs.property 'version', project.version
+    inputs.properties version: project.version, patchouli_version: patchouli_version
     filesMatching('META-INF/mods.toml') {
-        expand version: project.version
+        expand version: project.version, patchouli_version: patchouli_version
     }
 }
 
