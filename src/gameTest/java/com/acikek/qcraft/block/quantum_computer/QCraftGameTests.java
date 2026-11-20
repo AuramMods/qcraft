@@ -27,12 +27,20 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -42,11 +50,30 @@ import java.util.UUID;
 
 @GameTestHolder(QCraft.ID)
 @PrefixGameTestTemplate(false)
+@Mod.EventBusSubscriber(modid = QCraft.ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class QCraftGameTests {
 
     private static final String AREA = "test_area";
     private static final BlockPos FIRST_STATION = new BlockPos(5, 1, 5);
     private static final BlockPos SECOND_STATION = new BlockPos(16, 1, 5);
+
+    private static Block interruptingBlock;
+    private static BlockPos interruptAt;
+
+    @SubscribeEvent
+    public static void registerTestBlock(RegisterEvent event) {
+        event.register(ForgeRegistries.Keys.BLOCKS, QCraft.id("test_interrupting_block"), () -> {
+            interruptingBlock = new Block(BlockBehaviour.Properties.of()) {
+                @Override
+                public void onPlace(BlockState state, Level level, BlockPos pos, BlockState previous, boolean moving) {
+                    if (pos.equals(interruptAt)) {
+                        throw new IllegalStateException("GameTest interrupted the region swap");
+                    }
+                }
+            };
+            return interruptingBlock;
+        });
+    }
 
     @GameTest(template = AREA)
     public static void recipesAndAdvancementDataLoad(GameTestHelper test) {
@@ -236,6 +263,116 @@ public class QCraftGameTests {
         test.succeed();
     }
 
+    @GameTest(template = AREA)
+    public static void computerRollsBackInterruptedSwap(GameTestHelper test) {
+        var player = fakePlayer(test, FIRST_STATION.north());
+        UUID frequency = UUID.randomUUID();
+        QuantumComputerBlockEntity source = station(test, player, FIRST_STATION, frequency);
+        station(test, player, SECOND_STATION, frequency);
+        BlockPos a = FIRST_STATION.offset(1, 0, 1);
+        BlockPos b = SECOND_STATION.offset(1, 0, 1);
+        test.setBlock(a, interruptingBlock);
+        test.setBlock(b, Blocks.DIAMOND_BLOCK);
+        var coolant = new ItemStack(com.acikek.qcraft.item.Items.COOLANT_CELL.get());
+        source.setItem(0, coolant);
+        interruptAt = test.absolutePos(b);
+        try {
+            test.assertTrue(QuantumComputer.energize(test.getLevel(), source, player) == QuantumComputer.Status.SWAP_FAILED,
+                    "The rejected state change should fail the swap");
+        } finally {
+            interruptAt = null;
+        }
+        test.assertBlockPresent(interruptingBlock, a);
+        test.assertBlockPresent(Blocks.DIAMOND_BLOCK, b);
+        test.assertTrue(coolant.getDamageValue() == 0, "An interrupted swap must not use coolant");
+        test.succeed();
+    }
+
+    @GameTest(template = AREA)
+    public static void computerRejectsOverlappingAndUnloadedRegions(GameTestHelper test) {
+        var player = fakePlayer(test, FIRST_STATION.north());
+        UUID frequency = UUID.randomUUID();
+        BlockPos nearby = FIRST_STATION.offset(4, 0, 3);
+        QuantumComputerBlockEntity source = station(test, player, FIRST_STATION, frequency, 3);
+        station(test, player, nearby, frequency, 3);
+        var coolant = new ItemStack(com.acikek.qcraft.item.Items.COOLANT_CELL.get());
+        source.setItem(0, coolant);
+        test.assertTrue(QuantumComputer.energize(test.getLevel(), source, player) == QuantumComputer.Status.OVERLAP,
+                "Two intersecting boxes must not swap");
+        test.setBlock(nearby, Blocks.AIR);
+
+        var stack = new ItemStack(com.acikek.qcraft.block.Blocks.QUANTUM_COMPUTER.get());
+        EntangledPairRecipe.applyFrequency(stack, frequency);
+        BlockPos distant = source.getBlockPos().offset(-16_001, 0, -16_001);
+        QuantumComputerData data = QuantumComputerData.get(test.getLevel());
+        var unloaded = data.add(distant, stack);
+        test.assertTrue(QuantumComputer.energize(test.getLevel(), source, player) == QuantumComputer.Status.UNLOADED,
+                "An unloaded partner must not be swapped");
+        test.assertFalse(test.getLevel().hasChunkAt(distant), "The attempted swap must not load remote chunks");
+        test.assertTrue(coolant.getDamageValue() == 0, "Rejected swaps must not use coolant");
+        data.remove(unloaded);
+        test.succeed();
+    }
+
+    @GameTest(template = AREA)
+    public static void hopperAcceptsOnlyCoolantAndComputerDropsIt(GameTestHelper test) {
+        var player = fakePlayer(test, FIRST_STATION.north());
+        UUID frequency = UUID.randomUUID();
+        var stack = new ItemStack(com.acikek.qcraft.block.Blocks.QUANTUM_COMPUTER.get());
+        EntangledPairRecipe.applyFrequency(stack, frequency);
+        place(test, player, FIRST_STATION, stack);
+        test.setBlock(FIRST_STATION.above(), Blocks.HOPPER);
+        HopperBlockEntity hopper = (HopperBlockEntity) test.getBlockEntity(FIRST_STATION.above());
+        hopper.setItem(0, new ItemStack(Items.STONE));
+        hopper.setItem(1, new ItemStack(com.acikek.qcraft.item.Items.COOLANT_CELL.get()));
+        var computer = (QuantumComputerBlockEntity) test.getBlockEntity(FIRST_STATION);
+        test.startSequence().thenWaitUntil(() -> test.assertTrue(computer.getItem(0).is(com.acikek.qcraft.item.Items.COOLANT_CELL.get()),
+                "The hopper should transfer coolant into the computer")).thenExecute(() -> {
+            test.assertTrue(hopper.getItem(0).is(Items.STONE) && hopper.getItem(1).isEmpty(), "Hopper must insert coolant only");
+            player.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_PICKAXE));
+            BlockPos pos = test.absolutePos(FIRST_STATION);
+            test.assertTrue(player.gameMode.destroyBlock(pos), "The player should break the computer");
+            var drops = test.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2));
+            test.assertTrue(drops.size() == 2
+                            && drops.stream().filter(item -> Frequential.getFrequency(item.getItem()).filter(frequency::equals).isPresent()).count() == 1
+                            && drops.stream().filter(item -> item.getItem().is(com.acikek.qcraft.item.Items.COOLANT_CELL.get())).count() == 1,
+                    "Breaking should drop one entangled computer and its coolant, got " + drops.stream().map(ItemEntity::getItem).toList());
+        }).thenSucceed();
+    }
+
+    @GameTest(template = AREA)
+    public static void qBlockRecordsStayInTheirDimensionAndQueueRemoteFaces(GameTestHelper test) {
+        var level = test.getLevel();
+        var otherLevel = level.getServer().getLevel(Level.NETHER);
+        var player = test.makeMockSurvivalPlayer();
+        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get()));
+        UUID frequency = UUID.randomUUID();
+        ItemStack stack = new ItemStack(com.acikek.qcraft.block.Blocks.OBSERVER_DEPENDENT_BLOCK.get());
+        QBlockItem.applyFaces(stack, List.of("minecraft:gold_block", "minecraft:stone", "minecraft:stone",
+                "minecraft:stone", "minecraft:stone", "minecraft:stone"));
+        EntangledPairRecipe.applyFrequency(stack, frequency);
+        BlockPos local = test.absolutePos(FIRST_STATION);
+        BlockPos distant = local.offset(-16_001, 0, -16_001);
+        place(test, player, FIRST_STATION, stack.copy());
+        QBlockData data = QBlockData.get(level);
+        var first = data.locations.get(local).orElseThrow();
+        var remote = data.add(first.type, distant, stack);
+        var otherDimension = QBlockData.get(otherLevel);
+        otherDimension.add(first.type, local, stack);
+        data.observe(first, level, QBlock.Face.UP, QBlock.Observation.AUTOMATED_OBSERVER, null);
+        test.assertBlockPresent(Blocks.GOLD_BLOCK, FIRST_STATION);
+        test.assertTrue(otherDimension != data && otherDimension.frequencies.counterpart(otherDimension.locations.get(local).orElseThrow()) == null,
+                "An equal position and frequency in a different dimension must not connect");
+        test.assertFalse(level.hasChunkAt(distant), "An observed pair must leave the unloaded companion chunk unloaded");
+        var saved = QBlockData.fromNbt(data.save(new CompoundTag()));
+        test.assertTrue(remote.pendingFace == QBlock.Face.UP.index
+                        && saved.locations.get(distant).orElseThrow().pendingFace == QBlock.Face.UP.index,
+                "The pending display must be persisted for an unloaded companion");
+        data.remove(remote);
+        otherDimension.locations.get(local).ifPresent(otherDimension::remove);
+        test.succeed();
+    }
+
     private static CraftingRecipe recipe(GameTestHelper test, String path) {
         return (CraftingRecipe) test.getLevel().getRecipeManager().byKey(QCraft.id(path)).orElseThrow();
     }
@@ -258,12 +395,16 @@ public class QCraftGameTests {
     }
 
     private static QuantumComputerBlockEntity station(GameTestHelper test, Player player, BlockPos pos, UUID frequency) {
+        return station(test, player, pos, frequency, 2);
+    }
+
+    private static QuantumComputerBlockEntity station(GameTestHelper test, Player player, BlockPos pos, UUID frequency, int distance) {
         player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get()));
         ItemStack stack = new ItemStack(com.acikek.qcraft.block.Blocks.QUANTUM_COMPUTER.get());
         EntangledPairRecipe.applyFrequency(stack, frequency);
         place(test, player, pos, stack);
         for (QBlock.Face face : QBlock.Face.CARDINALS) {
-            pylon(test, player, pos, face, 2);
+            pylon(test, player, pos, face, distance);
         }
         return (QuantumComputerBlockEntity) test.getBlockEntity(pos);
     }

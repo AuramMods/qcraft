@@ -1,11 +1,13 @@
 package com.acikek.qcraft.item;
 
+import com.acikek.qcraft.QCraft;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 
 public class Goggles extends ArmorItem {
@@ -51,12 +53,12 @@ public class Goggles extends ArmorItem {
 
         @Override
         public Ingredient getRepairIngredient() {
-            return null;
+            return Ingredient.EMPTY;
         }
 
         @Override
         public String getName() {
-            return type.id + "_goggles";
+            return QCraft.ID + ":" + type.id + "_goggles";
         }
 
         @Override
@@ -73,7 +75,7 @@ public class Goggles extends ArmorItem {
     public final com.acikek.qcraft.item.Goggles.Type type;
 
     public Goggles(com.acikek.qcraft.item.Goggles.Type type) {
-        super(new Material(type), ArmorItem.Type.HELMET, new net.minecraft.world.item.Item.Properties());
+        super(new Material(type), ArmorItem.Type.HELMET, new Item.Properties());
         this.type = type;
     }
 

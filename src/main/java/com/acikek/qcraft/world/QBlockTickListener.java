@@ -6,11 +6,13 @@ import com.acikek.qcraft.item.Goggles;
 import com.acikek.qcraft.world.state.QBlockData;
 import com.acikek.qcraft.world.state.location.QBlockLocation;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.PistonEvent;
 
 import java.util.HashSet;
@@ -25,6 +27,12 @@ public class QBlockTickListener {
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
         if (event.phase == TickEvent.Phase.START && event.level instanceof ServerLevel level) {
             observeWorld(level);
+        }
+    }
+
+    public static void onBreak(BlockEvent.BreakEvent event) {
+        if (event.getLevel() instanceof ServerLevel level && QBlockData.get(level).locations.has(event.getPos())) {
+            event.setExpToDrop(0);
         }
     }
 
@@ -50,7 +58,7 @@ public class QBlockTickListener {
         double pitch = Math.toDegrees(Math.atan2(between.y, Math.hypot(between.x, between.z)));
         Vec3 rotated = between.yRot((float) Math.toRadians(270));
         double yaw = Math.toDegrees(Math.atan2(rotated.z, rotated.x));
-        double yawDiff = Math.abs(net.minecraft.util.Mth.wrapDegrees(player.getYRot() - yaw));
+        double yawDiff = Math.abs(Mth.wrapDegrees(player.getYRot() - yaw));
         double playerPitch = player.getXRot();
         if (yawDiff > 90.0) {
             pitch = (playerPitch > 0.0 ? 180.0 : -180.0) - pitch;
@@ -96,8 +104,13 @@ public class QBlockTickListener {
         }
 
         for (QBlockLocation location : loaded) {
-            if (location.observed && !held.contains(location) && !held.contains(data.frequencies.counterpart(location))) {
-                data.unobserve(location, level);
+            QBlockLocation other = data.frequencies.counterpart(location);
+            if (!held.contains(location) && !held.contains(other)) {
+                if (location.observed) {
+                    data.unobserve(location, level);
+                } else if (other != null && other.observed) {
+                    data.unobserve(other, level);
+                }
             }
         }
     }

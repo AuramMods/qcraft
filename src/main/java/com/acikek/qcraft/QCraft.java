@@ -38,8 +38,8 @@ public class QCraft {
                 .build());
     }
 
-    public QCraft(FMLJavaModLoadingContext context) {
-        var bus = context.getModEventBus();
+    public QCraft() {
+        var bus = FMLJavaModLoadingContext.get().getModEventBus();
         Blocks.REGISTER.register(bus);
         Items.REGISTER.register(bus);
         Sounds.REGISTER.register(bus);
@@ -51,10 +51,11 @@ public class QCraft {
         MinecraftForge.EVENT_BUS.addListener(QCraftCommand::register);
         MinecraftForge.EVENT_BUS.addListener(QBlockTickListener::onLevelTick);
         MinecraftForge.EVENT_BUS.addListener(QBlockTickListener::onPistonMove);
+        MinecraftForge.EVENT_BUS.addListener(QBlockTickListener::onBreak);
     }
 
     public static ResourceLocation id(String name) {
-        return ResourceLocation.of(ID + ':' + name, ':');
+        return new ResourceLocation(ID, name);
     }
 
     public static String uid(String item) {

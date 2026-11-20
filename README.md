@@ -15,6 +15,14 @@ A reimagination of qCraft for modern Minecraft.
 
 ...and much more! See the [wiki](https://github.com/acikek/qcraft/wiki) for in-depth feature explanations and tutorials.
 
+## Forge 1.20.1
+
+Install the same qCraft JAR on your Forge client and dedicated server. The build uses Java 17. Run `./gradlew build` to produce the mod in `build/libs`. Run `./gradlew runGameTestServer` for the headless gameplay tests.
+
+When moving a Reimagined world from Fabric 1.19, test with a copy of the entire world directory to retain qBlock faces, entanglement frequencies, and computer inventories. Forge may log that the old Fabric Mods data pack is absent while loading the qCraft data pack.
+
+The Quantum Computer swaps the blocks within matching pylon frames. Both regions must be loaded and must not overlap. The initiating and receiving computers stay in place. The swap rejects any qBlocks and other block entities inside either region, including containers. The initiating computer uses one coolant charge on a successful swap.
+
 ## Credits
 
 - This mod wouldn't have been possible without fantastic art by VirtuaLilith. I may have programmed the internal logic, but she really brought the mod to life!

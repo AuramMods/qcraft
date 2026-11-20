@@ -1,5 +1,6 @@
 package com.acikek.qcraft.world.state;
 
+import com.acikek.qcraft.QCraft;
 import com.acikek.qcraft.world.state.frequency.FrequencyMap;
 import com.acikek.qcraft.world.state.frequency.Frequential;
 import com.acikek.qcraft.world.state.frequency.LocationList;
@@ -51,7 +52,7 @@ public abstract class LocationState<T extends Frequential, P extends Pair<T>> ex
 
     public record Keys(String id, String data) {
         public Keys(String item) {
-            this("qcraft_" + item + "_data", "qcraft_" + item + "_locations");
+            this(QCraft.uid(item + "_data"), QCraft.uid(item + "_locations"));
         }
     }
 }

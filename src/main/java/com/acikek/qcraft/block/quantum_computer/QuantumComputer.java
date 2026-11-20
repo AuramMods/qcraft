@@ -67,7 +67,8 @@ public class QuantumComputer extends Block implements BlockItemProvider, EntityB
         OVERLAP("error.overlap"),
         UNSUPPORTED_BLOCKS("error.unsupported_blocks"),
         NO_COOLANT("error.no_coolant"),
-        SWAP_FAILED("error.swap_failed");
+        SWAP_FAILED("error.swap_failed"),
+        OUT_OF_BOUNDS("error.out_of_bounds");
 
         private final String key;
 
@@ -166,6 +167,9 @@ public class QuantumComputer extends Block implements BlockItemProvider, EntityB
         }
         BoundingBox a = source.layout.region(pos);
         BoundingBox b = target.layout.region(other.pos);
+        if (!isInBounds(level, a) || !isInBounds(level, b)) {
+            return new Connection(Status.OUT_OF_BOUNDS);
+        }
         if (a.intersects(b)) {
             return new Connection(Status.OVERLAP);
         }
@@ -173,6 +177,13 @@ public class QuantumComputer extends Block implements BlockItemProvider, EntityB
             return new Connection(Status.UNLOADED);
         }
         return new Connection(Status.READY, other.pos, a, b);
+    }
+
+    private static boolean isInBounds(ServerLevel level, BoundingBox box) {
+        BlockPos min = new BlockPos(box.minX(), box.minY(), box.minZ());
+        BlockPos max = new BlockPos(box.maxX(), box.maxY(), box.maxZ());
+        var border = level.getWorldBorder();
+        return level.isInWorldBounds(min) && level.isInWorldBounds(max) && border.isWithinBounds(min) && border.isWithinBounds(max);
     }
 
     private static boolean isLoaded(ServerLevel level, BoundingBox box) {
@@ -197,7 +208,6 @@ public class QuantumComputer extends Block implements BlockItemProvider, EntityB
         QBlockData qBlocks = QBlockData.get(level);
         List<Change> changes = new ArrayList<>();
         BoundingBox a = connection.source;
-        BoundingBox b = connection.target;
         BlockPos displacement = connection.other.subtract(pos);
         for (BlockPos offset : BlockPos.betweenClosed(a.minX(), a.minY(), a.minZ(), a.maxX(), a.maxY(), a.maxZ())) {
             if (offset.equals(pos)) {
@@ -221,7 +231,8 @@ public class QuantumComputer extends Block implements BlockItemProvider, EntityB
         try {
             for (Change change : changes) {
                 attempted++;
-                if (!level.setBlock(change.pos, change.after, SWAP_FLAGS)) {
+                if (!level.setBlock(change.pos, change.after, SWAP_FLAGS)
+                        && level.getBlockState(change.pos) != change.after) {
                     rollback(level, changes, attempted);
                     return Status.SWAP_FAILED;
                 }
@@ -232,6 +243,10 @@ public class QuantumComputer extends Block implements BlockItemProvider, EntityB
             return Status.SWAP_FAILED;
         }
 
+        if (changes.stream().anyMatch(change -> level.getBlockState(change.pos) != change.after)) {
+            rollback(level, changes, attempted);
+            return Status.SWAP_FAILED;
+        }
         coolant.setDamageValue(coolant.getDamageValue() + 1);
         computer.setChanged();
         for (Change change : changes) {
