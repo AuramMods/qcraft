@@ -226,6 +226,7 @@ public class QCraftGameTests {
         test.assertTrue(drops.size() == 1 && QBlockItem.equals(drops.get(0).getItem(), expected)
                         && Frequential.getFrequency(drops.get(0).getItem()).orElseThrow().equals(frequency),
                 "Mining must drop one configured block with the original frequency, got " + drops.stream().map(ItemEntity::getItem).toList());
+        drops.get(0).discard();
         test.succeed();
     }
 
@@ -361,6 +362,7 @@ public class QCraftGameTests {
         drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(absolute).inflate(2));
         test.assertTrue(drops.size() == 1 && drops.get(0).getItem().getItem() instanceof QBlockItem,
                 "World breakage must drop only the configured qBlock");
+        drops.get(0).discard();
         test.succeed();
     }
 
