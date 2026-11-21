@@ -55,12 +55,17 @@ repositories {
         url = 'https://www.cursemaven.com'
         content { includeModule 'curse.maven', 'patchouli-306770' }
     }
+    maven {
+        url = 'https://maven.theillusivec4.top/'
+        content { includeGroup 'top.theillusivec4.curios' }
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:${patchouli_curse_file}")
+    implementation fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}")
 }
 
 tasks.named('processResources', ProcessResources).configure {

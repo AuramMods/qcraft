@@ -15,7 +15,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Put an Essence of Entanglement between two unlinked qBlocks of the same type. All six programmed faces must match, including Air. Leave every other slot empty.",
+      "text": "Put an Essence of Entanglement between two unlinked qBlocks of the same type. All six faces must match, including Air and any stored container or machine data. Keep the other slots empty.",
       "title": "Match the Ingredients"
     },
     {

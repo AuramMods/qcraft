@@ -33,3 +33,10 @@ mandatory=false
 versionRange="[${patchouli_version},)"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.qcraft]]
+modId="curios"
+mandatory=false
+versionRange="[5.14.1,6)"
+ordering="AFTER"
+side="BOTH"

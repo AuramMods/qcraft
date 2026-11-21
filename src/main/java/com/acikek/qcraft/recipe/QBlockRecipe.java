@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CustomRecipe;
@@ -27,14 +28,28 @@ public class QBlockRecipe extends CustomRecipe {
     public ItemStack assemble(CraftingContainer inventory, RegistryAccess manager) {
         QBlockEssence essence = (QBlockEssence) inventory.getItem(QBlock.Face.CENTER).getItem();
         List<String> faces = new ArrayList<>();
+        CompoundTag faceData = new CompoundTag();
         for (QBlock.Face face : QBlock.Face.values()) {
-            Item item = inventory.getItem(face.slot).getItem();
-            faces.add(item instanceof BlockItem blockItem
-                    ? BuiltInRegistries.BLOCK.getKey(blockItem.getBlock()).toString()
-                    : "minecraft:air");
+            ItemStack ingredient = inventory.getItem(face.slot);
+            if (ingredient.getItem() instanceof BlockItem blockItem) {
+                var block = blockItem.getBlock();
+                faces.add(BuiltInRegistries.BLOCK.getKey(block).toString());
+                if (block.defaultBlockState().hasBlockEntity()) {
+                    CompoundTag item = ingredient.copyWithCount(1).save(new CompoundTag());
+                    if (!ingredient.is(block.asItem()) || item.contains("tag", Tag.TAG_COMPOUND)
+                            || item.contains("ForgeCaps", Tag.TAG_COMPOUND)) {
+                        CompoundTag seed = new CompoundTag();
+                        seed.put("item", item);
+                        faceData.put(face.name(), seed);
+                    }
+                }
+            } else {
+                faces.add("minecraft:air");
+            }
         }
         ItemStack stack = new ItemStack(essence.getQBlock());
         QBlockItem.applyFaces(stack, faces);
+        QBlockItem.applyFaceData(stack, faceData);
         return stack;
     }
 
@@ -54,18 +69,15 @@ public class QBlockRecipe extends CustomRecipe {
                 return false;
             }
         }
-        Item faceItem = null;
+        ItemStack first = inventory.getItem(QBlock.Face.UP.slot);
         boolean oneDifferent = false;
         for (QBlock.Face face : QBlock.Face.values()) {
             ItemStack stack = inventory.getItem(face.slot);
-            Item item = stack.getItem();
+            var item = stack.getItem();
             if (!stack.isEmpty() && (!(item instanceof BlockItem) || item instanceof QBlockItem)) {
                 return false;
             }
-            if (faceItem == null) {
-                faceItem = item;
-            }
-            else if (item != faceItem) {
+            if (item != first.getItem()) {
                 oneDifferent = true;
             }
         }

@@ -27,6 +27,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class QBlockItem extends FrequentialItem {
 
+    private static final String FACE_DATA = "face_data";
+
     public QBlockItem(Block block, Properties settings) {
         super(block, settings);
     }
@@ -71,7 +73,8 @@ public class QBlockItem extends FrequentialItem {
     public static boolean equals(ItemStack stack, ItemStack other) {
         if (stack.getItem() instanceof QBlockItem left && other.getItem() instanceof QBlockItem right) {
             return QBlock.byItem(left).type == QBlock.byItem(right).type
-                    && Arrays.equals(getFaces(stack), getFaces(other));
+                    && Arrays.equals(getFaces(stack), getFaces(other))
+                    && getFaceData(stack).equals(getFaceData(other));
         }
         return false;
     }
@@ -79,6 +82,19 @@ public class QBlockItem extends FrequentialItem {
     public static void applyFaces(ItemStack stack, List<String> faces) {
         for (int i = 0; i < faces.size(); i++) {
             QBlock.Face.values()[i].apply(stack, faces.get(i));
+        }
+    }
+
+    public static CompoundTag getFaceData(ItemStack stack) {
+        CompoundTag tag = stack.getTagElement(FACE_DATA);
+        return tag == null ? new CompoundTag() : tag.copy();
+    }
+
+    public static void applyFaceData(ItemStack stack, CompoundTag tag) {
+        if (tag.isEmpty()) {
+            stack.removeTagKey(FACE_DATA);
+        } else {
+            stack.addTagElement(FACE_DATA, tag.copy());
         }
     }
 

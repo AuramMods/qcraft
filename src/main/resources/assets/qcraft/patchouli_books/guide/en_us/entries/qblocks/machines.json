@@ -1,0 +1,22 @@
+{
+  "name": "Chests and Machines",
+  "icon": "minecraft:chest",
+  "category": "qcraft:qblocks",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Use a single-block container or machine item in the $(l:qcraft:qblocks/faces)face recipe$(/l). Once that face is visible, use it normally. Hold the observation with a powered observer if you want it to stay active."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Independent Faces",
+      "text": "A hidden face pauses and stores its contents and settings. Two faces of the same chest type have separate inventories. Mining the qBlock returns its configured item with the saved faces."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Machine Limits",
+      "text": "Use standalone machines. Blocks that rely on a multiblock structure or special placement may need that structure to function. Quantum Computer region swaps still require cargo without block entities."
+    }
+  ]
+}

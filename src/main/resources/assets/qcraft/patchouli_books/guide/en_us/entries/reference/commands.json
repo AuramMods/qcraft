@@ -21,7 +21,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Use /qcraft clear all or /qcraft clear to erase both sets of qBlock records in the current dimension. Back up the world first. Quantum Computer links are stored separately.",
+      "text": "Use /qcraft clear all or /qcraft clear to erase both sets of qBlock records here. Back up the world and recover qBlocks holding machine contents first. Computer links are stored separately.",
       "title": "Before You Clear"
     }
   ]

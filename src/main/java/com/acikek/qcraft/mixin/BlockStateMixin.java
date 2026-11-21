@@ -4,6 +4,7 @@ import com.acikek.qcraft.world.state.QBlockData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
@@ -23,9 +24,17 @@ public abstract class BlockStateMixin {
         if (origin == null) {
             return;
         }
-        QBlockData.get(loot.getLevel()).findDrop(BlockPos.containing(origin)).ifPresent(location -> {
+        BlockPos pos = BlockPos.containing(origin);
+        QBlockData data = QBlockData.get(loot.getLevel());
+        data.findDrop(pos).ifPresent(location -> {
             Float radius = loot.getOptionalParameter(LootContextParams.EXPLOSION_RADIUS);
             boolean survives = radius == null || loot.getLevel().random.nextFloat() <= 1.0f / radius;
+            if (survives) {
+                var entity = loot.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+                if (entity != null && !entity.isRemoved()) {
+                    data.captureFace(pos, (BlockState) (Object) this, entity);
+                }
+            }
             result.setReturnValue(survives ? List.of(location.getItemStack()) : List.of());
         });
     }

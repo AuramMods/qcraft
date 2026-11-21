@@ -21,6 +21,10 @@ Install the same qCraft JAR on your Forge client and dedicated server. The build
 
 With Patchouli installed on both client and server, craft the **qCraft Field Guide** with one Book and one Quantum Dust in any crafting grid. Finding Quantum Dust unlocks the recipe. You can also take the guide from the qCraft creative tab. Its book ID is `qcraft:guide` and its item is `patchouli:guide_book` tagged with `{"patchouli:book":"qcraft:guide"}`. The guide walks through qBlocks, entanglement, redstone automation, and building your first pair of Quantum Computer stations.
 
+Essence recipes accept standalone containers and machines as qBlock faces. Each face keeps its own saved block entity data while hidden and resumes when observed. Entangled qBlocks need matching faces and matching saved data.
+
+With Curios installed, both pairs of goggles use the dedicated **Goggles** slot. Anti-Observation Goggles work while equipped there. On login, any goggles left in a player's helmet slot by an older version return to their inventory.
+
 When moving a Reimagined world from Fabric 1.19, test with a copy of the entire world directory to retain qBlock faces, entanglement frequencies, and computer inventories. Forge may log that the old Fabric Mods data pack is absent while loading the qCraft data pack.
 
 The Quantum Computer swaps the blocks within matching pylon frames. Both regions must be loaded and must not overlap. The initiating and receiving computers stay in place. The swap rejects any qBlocks and other block entities inside either region, including containers. The initiating computer uses one coolant charge on a successful swap.

@@ -5,14 +5,17 @@ import com.acikek.qcraft.block.AutomatedObserver;
 import com.acikek.qcraft.block.QuantumOre;
 import com.acikek.qcraft.block.qblock.QBlock;
 import com.acikek.qcraft.block.qblock.QBlockItem;
+import com.acikek.qcraft.compat.CuriosGoggles;
 import com.acikek.qcraft.item.Goggles;
 import com.acikek.qcraft.recipe.EntangledPairRecipe;
 import com.acikek.qcraft.world.state.QBlockData;
 import com.acikek.qcraft.world.state.QuantumComputerData;
 import com.acikek.qcraft.world.state.frequency.Frequential;
+import com.acikek.qcraft.world.state.location.QBlockLocation;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -20,9 +23,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.TransientCraftingContainer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.context.UseOnContext;
@@ -41,11 +48,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.SlotContext;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -160,9 +170,7 @@ public class QCraftGameTests {
     public static void entangledBlocksObserveAndPersist(GameTestHelper test) {
         ServerLevel level = test.getLevel();
         var player = test.makeMockSurvivalPlayer();
-        ItemStack goggles = new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get());
-        player.setItemSlot(EquipmentSlot.HEAD, goggles);
-        test.assertTrue(Goggles.isWearingGoggles(player, Goggles.Type.ANTI_OBSERVATION), "Goggles must equip on the head");
+        equipAntiObservationGoggles(player);
 
         BlockPos first = new BlockPos(6, 1, 4);
         BlockPos second = new BlockPos(15, 1, 4);
@@ -229,7 +237,7 @@ public class QCraftGameTests {
         BlockPos lever = target.east(2);
         Block inert = com.acikek.qcraft.block.Blocks.INERT_QUANTUM_BLOCK.get();
         var player = test.makeMockSurvivalPlayer();
-        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get()));
+        equipAntiObservationGoggles(player);
         ItemStack stack = new ItemStack(com.acikek.qcraft.block.Blocks.QUANTUM_BLOCK.get());
         QBlockItem.applyFaces(stack, Collections.nCopies(6, "minecraft:stone"));
         QBlock.Face.EAST.apply(stack, "minecraft:redstone_block");
@@ -265,6 +273,113 @@ public class QCraftGameTests {
             test.assertTrue(results.size() == 2, "Repeated trials should produce both opposite faces");
             test.succeed();
         });
+    }
+
+    @GameTest(template = AREA)
+    public static void gogglesUseCuriosInsteadOfArmor(GameTestHelper test) {
+        Player player = test.makeMockSurvivalPlayer();
+        var inventory = CuriosApi.getCuriosInventory(player).resolve().orElseThrow();
+        var slot = new SlotContext(CuriosGoggles.SLOT, player, 0, false, true);
+        ItemStack anti = new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get());
+        ItemStack quantum = new ItemStack(com.acikek.qcraft.item.Items.QUANTUM_GOGGLES.get());
+        test.assertTrue(inventory.getStacksHandler(CuriosGoggles.SLOT).orElseThrow().getSlots() == 1,
+                "Players must have one Goggles slot");
+        for (ItemStack goggles : List.of(anti, quantum)) {
+            test.assertFalse(goggles.getItem() instanceof ArmorItem, "Goggles must not be armor");
+            test.assertTrue(CuriosApi.isStackValid(slot, goggles), "The Goggles slot must accept both qCraft pairs");
+        }
+        test.assertFalse(CuriosApi.isStackValid(slot, new ItemStack(Items.IRON_HELMET)), "Goggles slot must reject helmets");
+        player.setItemSlot(EquipmentSlot.HEAD, anti.copy());
+        test.assertFalse(Goggles.isWearingGoggles(player, Goggles.Type.ANTI_OBSERVATION), "Legacy helmet slot must have no effect");
+        Goggles.recoverLegacyHelmet(new PlayerEvent.PlayerLoggedInEvent(player));
+        test.assertTrue(player.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && player.getInventory().contains(anti),
+                "Logging in must recover legacy goggles into the inventory");
+        inventory.setEquippedCurio(CuriosGoggles.SLOT, 0, quantum);
+        test.assertFalse(Goggles.isWearingGoggles(player, Goggles.Type.ANTI_OBSERVATION), "Quantum Goggles are cosmetic");
+        equipAntiObservationGoggles(player);
+        test.assertTrue(Goggles.isWearingGoggles(player, Goggles.Type.ANTI_OBSERVATION), "Anti-Observation Goggles work when equipped as a curio");
+        test.succeed();
+    }
+
+    @GameTest(template = AREA)
+    public static void tileFacesKeepSeparateInventoriesAndDropOnce(GameTestHelper test) {
+        ServerLevel level = test.getLevel();
+        BlockPos pos = FIRST_STATION;
+        BlockPos absolute = test.absolutePos(pos);
+        var player = fakePlayer(test, pos.south(2));
+        equipAntiObservationGoggles(player);
+        var grid = new TransientCraftingContainer(player.inventoryMenu, 3, 3);
+        grid.setItem(QBlock.Face.CENTER, new ItemStack(com.acikek.qcraft.item.Items.OBSERVATION_ESSENCE.get()));
+        grid.setItem(QBlock.Face.UP.slot, seededChest(new ItemStack(Items.EMERALD, 3)));
+        grid.setItem(QBlock.Face.EAST.slot, seededChest(new ItemStack(Items.DIAMOND, 2)));
+        CraftingRecipe recipe = recipe(test, "quantum_block");
+        test.assertTrue(recipe.matches(grid, level), "The essence recipe must accept tagged block entity items");
+        ItemStack configured = recipe.assemble(grid, level.registryAccess());
+        ItemStack expected = configured.copy();
+        place(test, player, pos, configured);
+        QBlockData data = QBlockData.get(level);
+        var location = data.locations.get(absolute).orElseThrow();
+        showFace(data, location, level, QBlock.Face.UP);
+        Container chest = (Container) level.getBlockEntity(absolute);
+        assertContents(test, chest, Items.EMERALD, 3);
+        chest.setItem(0, new ItemStack(Items.EMERALD, 7));
+        showFace(data, location, level, QBlock.Face.EAST);
+        assertContents(test, (Container) level.getBlockEntity(absolute), Items.DIAMOND, 2);
+        data.unobserve(location, level);
+        test.assertBlockPresent(com.acikek.qcraft.block.Blocks.INERT_OBSERVER_DEPENDENT_BLOCK.get(), pos);
+        test.assertTrue(level.getBlockEntity(absolute) == null, "A hidden face must have no live block entity");
+
+        var saved = QBlockData.fromNbt(data.save(new CompoundTag())).locations.get(absolute).orElseThrow();
+        var pairGrid = new TransientCraftingContainer(player.inventoryMenu, 3, 3);
+        pairGrid.setItem(0, expected);
+        pairGrid.setItem(1, new ItemStack(com.acikek.qcraft.item.Items.ENTANGLEMENT_ESSENCE.get()));
+        pairGrid.setItem(2, saved.getItemStack());
+        test.assertFalse(recipe(test, "entangled_pair").matches(pairGrid, level),
+                "Pairing must not replace one chest's contents with a copy of another");
+        pairGrid.setItem(0, saved.getItemStack());
+        test.assertTrue(recipe(test, "entangled_pair").matches(pairGrid, level), "Identical saved faces can be paired");
+
+        showFace(data, location, level, QBlock.Face.UP);
+        chest = (Container) level.getBlockEntity(absolute);
+        assertContents(test, chest, Items.EMERALD, 7);
+        chest.setItem(0, new ItemStack(Items.EMERALD, 5));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE));
+        test.assertTrue(player.gameMode.destroyBlock(absolute), "The live chest face must be mineable");
+        var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(absolute).inflate(2));
+        test.assertTrue(drops.size() == 1 && drops.get(0).getItem().getItem() instanceof QBlockItem,
+                "Transitions and mining must produce only one configured qBlock");
+        ItemStack recovered = drops.get(0).getItem().copy();
+        drops.get(0).discard();
+        place(test, player, pos, recovered);
+        location = data.locations.get(absolute).orElseThrow();
+        showFace(data, location, level, QBlock.Face.UP);
+        assertContents(test, (Container) level.getBlockEntity(absolute), Items.EMERALD, 5);
+        showFace(data, location, level, QBlock.Face.EAST);
+        assertContents(test, (Container) level.getBlockEntity(absolute), Items.DIAMOND, 2);
+
+        test.assertTrue(level.destroyBlock(absolute, true), "The live container must support non-player breakage");
+        drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(absolute).inflate(2));
+        test.assertTrue(drops.size() == 1 && drops.get(0).getItem().getItem() instanceof QBlockItem,
+                "World breakage must drop only the configured qBlock");
+        test.succeed();
+    }
+
+    private static ItemStack seededChest(ItemStack content) {
+        ItemStack chest = new ItemStack(Items.CHEST);
+        NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
+        items.set(0, content);
+        chest.addTagElement("BlockEntityTag", ContainerHelper.saveAllItems(new CompoundTag(), items));
+        return chest;
+    }
+
+    private static void showFace(QBlockData data, QBlockLocation location,
+                                 ServerLevel level, QBlock.Face face) {
+        data.observe(location, level, face, QBlock.Observation.AUTOMATED_OBSERVER, null);
+    }
+
+    private static void assertContents(GameTestHelper test, Container container, Item item, int count) {
+        ItemStack stack = container.getItem(0);
+        test.assertTrue(stack.is(item) && stack.getCount() == count, "Expected " + count + " " + item + " in the active face, got " + stack);
     }
 
     @GameTest(template = AREA)
@@ -395,7 +510,7 @@ public class QCraftGameTests {
         var level = test.getLevel();
         var otherLevel = level.getServer().getLevel(Level.NETHER);
         var player = test.makeMockSurvivalPlayer();
-        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get()));
+        equipAntiObservationGoggles(player);
         UUID frequency = UUID.randomUUID();
         ItemStack stack = new ItemStack(com.acikek.qcraft.block.Blocks.OBSERVER_DEPENDENT_BLOCK.get());
         QBlockItem.applyFaces(stack, List.of("minecraft:gold_block", "minecraft:stone", "minecraft:stone",
@@ -435,6 +550,11 @@ public class QCraftGameTests {
         return player;
     }
 
+    private static void equipAntiObservationGoggles(Player player) {
+        CuriosApi.getCuriosInventory(player).resolve().orElseThrow().setEquippedCurio(CuriosGoggles.SLOT, 0,
+                new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get()));
+    }
+
     private static void place(GameTestHelper test, Player player, BlockPos relative, ItemStack stack) {
         test.setBlock(relative.below(), Blocks.STONE);
         BlockPos support = test.absolutePos(relative.below());
@@ -449,7 +569,7 @@ public class QCraftGameTests {
     }
 
     private static QuantumComputerBlockEntity station(GameTestHelper test, Player player, BlockPos pos, UUID frequency, int distance) {
-        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(com.acikek.qcraft.item.Items.ANTI_OBSERVATION_GOGGLES.get()));
+        equipAntiObservationGoggles(player);
         ItemStack stack = new ItemStack(com.acikek.qcraft.block.Blocks.QUANTUM_COMPUTER.get());
         EntangledPairRecipe.applyFrequency(stack, frequency);
         place(test, player, pos, stack);

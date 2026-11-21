@@ -13,16 +13,24 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class QBlockLocation extends Frequential {
+
+    public static final int INERT = QBlock.Face.values().length;
 
     public static final Codec<QBlockLocation> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
@@ -31,7 +39,9 @@ public class QBlockLocation extends Frequential {
                     QBlock.Type.CODEC.fieldOf("type").forGetter(l -> l.type),
                     Codec.list(Codec.STRING).fieldOf("faces").forGetter(l -> l.faces),
                     Codec.BOOL.fieldOf("observed").forGetter(l -> l.observed),
-                    Codec.intRange(-1, 6).optionalFieldOf("pending_face", -1).forGetter(l -> l.pendingFace)
+                    Codec.intRange(-1, INERT).optionalFieldOf("pending_face", -1).forGetter(l -> l.pendingFace),
+                    Codec.intRange(-1, INERT).optionalFieldOf("displayed_face", -1).forGetter(l -> l.displayedFace),
+                    CompoundTag.CODEC.optionalFieldOf("face_data", new CompoundTag()).forGetter(l -> l.faceData)
             )
             .apply(instance, QBlockLocation::new)
     );
@@ -42,6 +52,8 @@ public class QBlockLocation extends Frequential {
     public final List<String> faces;
     public boolean observed;
     public int pendingFace;
+    public int displayedFace;
+    private final CompoundTag faceData;
 
     /**
      * Constructs a {@link QBlockLocation}.<br>
@@ -50,19 +62,22 @@ public class QBlockLocation extends Frequential {
      * @param type      The qBlock's type. This determines its observation behavior.
      * @param pos       The block position of the location.
      * @param faces     The block face IDs. To read these from an item, see {@link QBlockItem#getFaces(ItemStack)}.
-     * @param observed  Whether this location is currently observed.
+     * @param faceData  Block entity data carried by the configured qBlock item.
      * @param frequency The String UUID of the location's entanglement frequency.
      */
-    public QBlockLocation(BlockPos pos, Optional<UUID> frequency, QBlock.Type type, List<String> faces, boolean observed) {
-        this(pos, frequency, type, faces, observed, -1);
+    public QBlockLocation(BlockPos pos, Optional<UUID> frequency, QBlock.Type type, List<String> faces, CompoundTag faceData) {
+        this(pos, frequency, type, faces, false, -1, INERT, faceData);
     }
 
-    private QBlockLocation(BlockPos pos, Optional<UUID> frequency, QBlock.Type type, List<String> faces, boolean observed, int pendingFace) {
+    private QBlockLocation(BlockPos pos, Optional<UUID> frequency, QBlock.Type type, List<String> faces, boolean observed,
+                           int pendingFace, int displayedFace, CompoundTag faceData) {
         super(pos, frequency);
         this.pendingFace = pendingFace;
+        this.displayedFace = displayedFace;
         this.type = type;
-        this.faces = faces;
+        this.faces = List.copyOf(faces);
         this.observed = observed;
+        this.faceData = faceData.copy();
     }
 
     public Block getFaceBlock(int index) {
@@ -78,6 +93,66 @@ public class QBlockLocation extends Frequential {
         return getFaceBlock(face.index);
     }
 
+    public BlockState getFaceState(int face) {
+        if (face == INERT) {
+            return type.resolveInert().defaultBlockState();
+        }
+        Block block = getFaceBlock(face);
+        CompoundTag data = faceData.getCompound(QBlock.Face.values()[face].name());
+        if (data.contains("state", Tag.TAG_COMPOUND)) {
+            BlockState saved = NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), data.getCompound("state"));
+            if (saved.is(block) && saved.hasBlockEntity()) {
+                return saved;
+            }
+        }
+        return block.defaultBlockState();
+    }
+
+    public boolean captureFace(BlockState state, BlockEntity entity) {
+        if (entity == null || entity.onlyOpCanSetNbt()) {
+            return false;
+        }
+        int face = displayedFace;
+        if (face < 0 || face >= INERT || !state.is(getFaceBlock(face))) {
+            // Older worlds did not record which face is displayed. Preserve its live tile once.
+            face = 0;
+            while (face < INERT && !state.is(getFaceBlock(face))) {
+                face++;
+            }
+            if (face == INERT) {
+                return false;
+            }
+        }
+        CompoundTag snapshot = new CompoundTag();
+        snapshot.put("state", NbtUtils.writeBlockState(state));
+        snapshot.put("entity", entity.saveWithId().copy());
+        faceData.put(QBlock.Face.values()[face].name(), snapshot);
+        displayedFace = face;
+        return true;
+    }
+
+    public void restoreFace(int face, Level level, BlockEntity entity) {
+        if (entity.onlyOpCanSetNbt()) {
+            return;
+        }
+        CompoundTag data = faceData.getCompound(QBlock.Face.values()[face].name());
+        if (data.contains("entity", Tag.TAG_COMPOUND)) {
+            CompoundTag snapshot = data.getCompound("entity");
+            if (!BlockEntityType.getKey(entity.getType()).toString().equals(snapshot.getString("id"))) {
+                throw new IllegalStateException("Saved block entity type does not match " + entity.getType());
+            }
+            entity.load(snapshot.copy());
+        } else {
+            BlockState state = level.getBlockState(pos);
+            ItemStack seed = data.contains("item", Tag.TAG_COMPOUND) ? ItemStack.of(data.getCompound("item")) : new ItemStack(state.getBlock());
+            if (seed.getItem() instanceof BlockItem item && state.is(item.getBlock())) {
+                BlockItem.updateCustomBlockEntityTag(level, null, pos, seed);
+                state.getBlock().setPlacedBy(level, pos, state, null, seed);
+            }
+        }
+        entity.setChanged();
+    }
+
     /**
      * @return The stack, based on block type, with the faces applied to its NBT.
      * @see QBlockItem#applyFaces(ItemStack, List)
@@ -85,6 +160,7 @@ public class QBlockLocation extends Frequential {
     public ItemStack getItemStack() {
         ItemStack stack = new ItemStack(type.resolveBlock());
         QBlockItem.applyFaces(stack, faces);
+        QBlockItem.applyFaceData(stack, faceData);
         frequency.ifPresent(f -> stack.getOrCreateTag().putUUID("frequency", f));
         return stack;
     }

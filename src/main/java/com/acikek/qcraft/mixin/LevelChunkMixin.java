@@ -17,6 +17,17 @@ public abstract class LevelChunkMixin {
 
     @Shadow public abstract Level getLevel();
 
+    @Shadow public abstract void removeBlockEntity(BlockPos pos);
+
+    @Inject(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;onRemove(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)V"))
+    private void qcraft$detachStoredTile(BlockPos pos, BlockState replacement, boolean moving, CallbackInfoReturnable<BlockState> result) {
+        if (!replacement.hasBlockEntity() && getLevel() instanceof ServerLevel server
+                && QBlockData.get(server).locations.has(pos)) {
+            // The qBlock drop or face snapshot already owns the data. Do not let onRemove spill it too.
+            removeBlockEntity(pos);
+        }
+    }
+
     @Inject(method = "setBlockState", at = @At("RETURN"))
     private void qcraft$onBlockChanged(BlockPos pos, BlockState replacement, boolean moving, CallbackInfoReturnable<BlockState> result) {
         BlockState previous = result.getReturnValue();

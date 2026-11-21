@@ -20,7 +20,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "An empty face slot means Air. Use at least two different values across all six faces, including Air. Two kinds of blocks work, or one kind and Air. Use ordinary blocks for faces.",
+      "text": "An empty face slot means Air. Use at least two different block types, counting Air. Many single-block containers and machines work as $(l:qcraft:qblocks/machines)qBlock faces$(/l).",
       "title": "Program Air"
     },
     {

@@ -5,6 +5,7 @@ import com.acikek.qcraft.block.Blocks;
 import com.acikek.qcraft.block.quantum_computer.QuantumComputerBlockEntity;
 import com.acikek.qcraft.block.quantum_computer.QuantumComputerMenu;
 import com.acikek.qcraft.command.QCraftCommand;
+import com.acikek.qcraft.item.Goggles;
 import com.acikek.qcraft.item.Items;
 import com.acikek.qcraft.recipe.Recipes;
 import com.acikek.qcraft.sound.Sounds;
@@ -52,6 +53,7 @@ public class QCraft {
         MinecraftForge.EVENT_BUS.addListener(QBlockTickListener::onLevelTick);
         MinecraftForge.EVENT_BUS.addListener(QBlockTickListener::onPistonMove);
         MinecraftForge.EVENT_BUS.addListener(QBlockTickListener::onBreak);
+        MinecraftForge.EVENT_BUS.addListener(Goggles::recoverLegacyHelmet);
     }
 
     public static ResourceLocation id(String name) {

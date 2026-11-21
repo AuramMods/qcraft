@@ -6,6 +6,7 @@ import com.acikek.qcraft.client.gui.screen.QuantumComputerScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
@@ -14,6 +15,9 @@ public class QCraftClient {
 
     @SubscribeEvent
     public static void setup(FMLClientSetupEvent event) {
+        if (ModList.get().isLoaded("curios")) {
+            GogglesRenderer.register();
+        }
         event.enqueueWork(() -> MenuScreens.register(QuantumComputerMenu.TYPE.get(), QuantumComputerScreen::new));
     }
 }
