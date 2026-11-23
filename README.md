@@ -19,6 +19,8 @@ A reimagination of qCraft for modern Minecraft.
 
 Install the same qCraft JAR on your Forge client and dedicated server. The build uses Java 17. Run `./gradlew build` to produce the mod in `build/libs`. Run `./gradlew runGameTestServer` for the headless gameplay tests.
 
+Build, test, and package qCraft locally with the Gradle wrapper. Keep this repository free of GitHub Actions workflows. For releases, upload the reobfuscated runtime JAR produced by the local build.
+
 With Patchouli installed on both client and server, craft the **qCraft Field Guide** with one Book and one Quantum Dust in any crafting grid. Finding Quantum Dust unlocks the recipe. You can also take the guide from the qCraft creative tab. Its book ID is `qcraft:guide` and its item is `patchouli:guide_book` tagged with `{"patchouli:book":"qcraft:guide"}`. The guide walks through qBlocks, entanglement, redstone automation, and building your first pair of Quantum Computer stations.
 
 Essence recipes accept standalone containers and machines as qBlock faces. Each face keeps its own saved block entity data while hidden and resumes when observed. Entangled qBlocks need matching faces and matching saved data.
